@@ -394,15 +394,6 @@ body[data-view="shop"] main, body[data-view="room"] main { padding-bottom: 14px;
 .wallet-berry { font-size: 1.1em; }
 .wallet.bump { animation: bump 0.5s ease-out; }
 @keyframes bump { 30% { transform: scale(1.18); } }
-/* 바구니 버튼 (누르면 바구니 보기) */
-.bag {
-  display: inline-flex; align-items: center; gap: 4px; min-height: 48px; padding: 4px 16px; border: none; border-radius: 999px; cursor: pointer;
-  background: #fff; box-shadow: var(--shadow); font-size: 24px; color: var(--ink); transition: transform 0.15s;
-}
-.bag:active { transform: scale(0.94); }
-.bag b { font-weight: normal; min-width: 1em; }
-.bag.bump { animation: bump 0.5s ease-out; }
-
 /* 옷 칸 */
 .shelf {
   position: relative; min-height: 0; padding: 10px;
@@ -449,7 +440,33 @@ body[data-view="shop"] main, body[data-view="room"] main { padding-bottom: 14px;
   animation: pop 0.35s ease-out;
 }
 .stamp.cart { background: #ffb74d; font-size: 16px; }
-.item-card.in-cart:not(.on) { box-shadow: 0 0 0 3px #ffb74d, 0 3px 10px rgba(30, 70, 120, 0.14); }
+/* 바구니에 담은 옷: 회색으로 어둡게 (더 담을 수 없어요). 누르면 고개를 젓듯 흔들려요 */
+.item-card.in-cart, .item-card.char.in-cart {
+  cursor: default; background: #e4e0e6;
+  box-shadow: inset 0 0 0 3px #cbc5ce;
+}
+.item-card.in-cart:hover { transform: none; }
+.item-card.in-cart .item-art { filter: grayscale(0.9) opacity(0.45); }
+.item-card.in-cart .price, .item-card.in-cart .star-badge, .item-card.in-cart .who, .item-card.in-cart .item-name { filter: grayscale(1); opacity: 0.5; }
+.cart-label {
+  position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%) rotate(-8deg);
+  padding: 3px 12px; border-radius: 999px; white-space: nowrap;
+  background: #fff; color: #8a6d00; box-shadow: 0 0 0 3px #ffb74d; font-size: 17px;
+}
+.item-card.nope { animation: nope 0.4s ease-in-out; }
+@keyframes nope { 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+
+/* 옷 칸 아래 오른쪽: 🧺 바구니 보기 + 🍓 계산해요 */
+.shelf-actions { position: absolute; right: 14px; bottom: 14px; z-index: 3; display: flex; gap: 10px; align-items: center; }
+.shelf-actions .done-btn { position: static; }
+.cart-btn { display: inline-flex; align-items: center; gap: 6px; padding: 12px 18px 12px 22px; box-shadow: 0 8px 22px rgba(120, 30, 70, 0.22); white-space: nowrap; }
+.cart-btn.bump { animation: bump 0.5s ease-out; }
+.cart-count {
+  min-width: 34px; height: 34px; padding: 0 8px; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--c-pink); color: #fff; font-weight: normal; font-size: 21px;
+}
+.cart-count.zero { background: #d9d3dc; color: #fff; }
 .pick-name .price { font-size: 0.8em; vertical-align: middle; }
 .pick-act .pick-hint.small { flex-basis: 100%; font-size: 17px; padding: 2px 10px; }
 
@@ -468,6 +485,7 @@ body[data-view="shop"] main, body[data-view="room"] main { padding-bottom: 14px;
 .cart-art { width: 60px; height: 60px; display: flex; }
 .cart-art .thumb { width: 100%; height: 100%; }
 .cart-name { font-size: 20px; line-height: 1.3; }
+.cart-name .price, .pick-name .price { display: inline-block; white-space: nowrap; }
 .cart-sum { margin: 4px 0 14px !important; font-size: 26px !important; color: var(--ink) !important; }
 .cart-sum b { font-weight: normal; color: var(--c-pink-text); }
 @media (max-height: 520px) {
@@ -508,8 +526,12 @@ body[data-view="shop"] main, body[data-view="room"] main { padding-bottom: 14px;
   .tab-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .tab-emoji { font-size: 28px; }
   .wallet { font-size: 24px; padding: 2px 14px 2px 8px; }
-  .bag { font-size: 18px; padding: 4px 10px; }
   .done-btn { font-size: 20px; padding: 12px 20px; right: 10px; bottom: 10px; }
+  .shelf-actions { right: 10px; bottom: 10px; gap: 8px; }
+  .cart-btn { font-size: 20px; padding: 10px 12px 10px 16px; gap: 4px; }
+  .cart-btn-more { display: none; } /* 좁은 화면: "🧺 바구니 3" */
+  .cart-count { min-width: 30px; height: 30px; font-size: 19px; }
+  .cart-label { font-size: 15px; padding: 2px 9px; }
   .pick .big-btn { font-size: 20px; padding: 10px 18px; }
   .pick-name { font-size: 18px; }
   .pick-warn { font-size: 18px; }

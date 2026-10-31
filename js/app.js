@@ -525,7 +525,6 @@
         <div class="stage fitting">
           <div class="stage-top">
             <div class="wallet" id="wallet" aria-live="polite"><span class="wallet-berry" aria-hidden="true">🍓</span><b id="berries">${free()}</b><span class="sr-only">쓸 수 있는 딸기</span></div>
-            <button class="bag" id="bag" aria-label="바구니 보기"><span aria-hidden="true">🧺</span><b>${G.cart.length}</b></button>
             <button class="icon-btn" id="mirror-reset" aria-label="처음 옷으로 돌아가기">🔄</button>
           </div>
           <div class="doll-wrap" id="mirror"></div>
@@ -534,7 +533,10 @@
         <div class="shelf">
           ${tabsHtml(tabs, shopTab)}
           <div class="shelf-grid" id="grid" data-quiet></div>
-          <button class="big-btn done-btn" id="done">🧺 계산해요</button>
+          <div class="shelf-actions">
+            <button class="big-btn alt cart-btn" id="bag" aria-label="바구니 보기"><span aria-hidden="true">🧺</span> 바구니<span class="cart-btn-more"> 보기</span> <b class="cart-count${G.cart.length ? "" : " zero"}">${G.cart.length}</b></button>
+            <button class="big-btn done-btn" id="done">🍓 계산해요</button>
+          </div>
         </div>
       </section>`;
 
@@ -543,12 +545,13 @@
       const owned = G.owned.includes(it.id);
       const inCart = G.cart.includes(it.id);
       const p = priceOf(it);
-      return `<button class="item-card${it.char ? " char" : ""}${owned ? " owned" : ""}${inCart ? " in-cart" : ""}${it.id === pickId ? " on" : ""}" data-id="${it.id}" aria-label="${esc(labelOf(it))}, 딸기 ${p}개${owned ? ", 샀어요" : inCart ? ", 바구니에 있어요" : ""}">
+      // 바구니에 담은 옷은 회색으로 어둡게 + "담았어요" 띠: 더 담을 수 없다는 표시 (aria-disabled)
+      return `<button class="item-card${it.char ? " char" : ""}${owned ? " owned" : ""}${inCart ? " in-cart" : ""}${it.id === pickId && !inCart ? " on" : ""}" data-id="${it.id}"${inCart ? ` aria-disabled="true"` : ""} aria-label="${esc(labelOf(it))}, 딸기 ${p}개${owned ? ", 샀어요" : inCart ? ", 바구니에 담았어요" : ""}">
         <span class="item-art">${it.cat === "gift" ? Doll.giftThumb(it) : Doll.thumb(it)}</span>
         ${it.cat === "gift" ? `<span class="who" aria-hidden="true">${famEmoji(it.who)}</span><span class="item-name">${famName(it.who)}</span>` : ""}
         <span class="price${it.char ? " hot" : ""}" aria-hidden="true">🍓${p}</span>
         ${it.char ? `<span class="star-badge" aria-hidden="true">⭐</span>` : ""}
-        ${owned ? `<span class="stamp" aria-hidden="true">${G.gifted.includes(it.id) ? "💝" : "✔"}</span>` : inCart ? `<span class="stamp cart" aria-hidden="true">🧺</span>` : ""}
+        ${owned ? `<span class="stamp" aria-hidden="true">${G.gifted.includes(it.id) ? "💝" : "✔"}</span>` : inCart ? `<span class="stamp cart" aria-hidden="true">🧺</span><span class="cart-label" aria-hidden="true">담았어요</span>` : ""}
       </button>`;
     };
     const drawGrid = () => { $("#grid").innerHTML = list(shopTab).map(card).join(""); Doll.fit($("#grid")); $("#grid").scrollTop = 0; };
@@ -570,7 +573,7 @@
       let act;
       if (G.gifted.includes(it.id)) act = `<span class="chip hot">💝 선물했어요</span>`;
       else if (G.owned.includes(it.id)) act = `<span class="chip">✔ 샀어요</span>`;
-      else if (G.cart.includes(it.id)) act = `<span class="chip hot">🧺 바구니에 있어요</span><button class="small-btn" id="cart-out" data-quiet>✕ 빼요</button>`;
+      else if (G.cart.includes(it.id)) act = `<span class="chip hot">🧺 바구니에 담았어요</span><button class="small-btn" id="cart-out" data-quiet>✕ 빼요</button>`;
       else if (free() >= p) act = `<button class="big-btn buy-btn" id="cart-in" data-quiet>🧺 바구니에 담아요</button>`;
       else act = `<p class="pick-warn">딸기가 모자라요 😢</p>${G.cart.length ? `<p class="pick-hint small">바구니에서 하나 빼 볼까요?</p>` : ""}`;
       $("#pick").innerHTML = `<p class="pick-name">${it.char ? "⭐ " : ""}${esc(labelOf(it))} <span class="price${it.char ? " hot" : ""}">🍓${p}</span></p><div class="pick-act">${act}</div>`;
@@ -579,6 +582,7 @@
     const updateWallet = (delta) => {
       $("#berries").textContent = free();
       $("#bag b").textContent = G.cart.length;
+      $("#bag b").classList.toggle("zero", !G.cart.length);
       bump($("#wallet"));
       if (delta) floatNote($("#wallet"), `${delta > 0 ? "+" : ""}${delta} 🍓`);
     };
@@ -618,6 +622,16 @@
       const b = e.target.closest(".item-card");
       if (!b) return;
       const it = ITEM[b.dataset.id];
+      // 바구니에 담은 옷: 입어 보기·담기는 안 돼요. 고개를 젓듯 살짝 흔들리고, 아래에 "이미 담았어요 + 바구니 보기"
+      // (거울 속 옷과 이름이 어긋나지 않게 pickId·거울은 그대로)
+      if (G.cart.includes(it.id)) {
+        Sound.boop();
+        b.classList.remove("nope");
+        void b.offsetWidth;
+        b.classList.add("nope");
+        $("#pick").innerHTML = `<p class="pick-name">🧺 이미 바구니에 담았어요</p><div class="pick-act"><button class="small-btn" id="pick-cart">🧺 바구니 보기</button></div>`;
+        return;
+      }
       pickId = it.id;
       if (it.cat !== "gift") putOn(G.mirror, it);
       note("try", { id: it.id });
@@ -628,6 +642,7 @@
       drawPick();
     });
     $("#pick").addEventListener("click", (e) => {
+      if (e.target.closest("#pick-cart")) { openCart("view"); return; }
       const it = pickId && ITEM[pickId];
       if (!it) return;
       if (e.target.closest("#cart-in")) cartIn(it);
@@ -641,15 +656,16 @@
       drawMirror(false);
       drawPick();
     });
-    $("#bag").addEventListener("click", openCart);
-    $("#done").addEventListener("click", openCart);
+    $("#bag").addEventListener("click", () => openCart("view"));
+    $("#done").addEventListener("click", () => openCart("pay"));
 
     const goRoom = () => { advance("room"); save(); location.hash = "#/room"; };
 
-    // 계산 1단계: 바구니 보기. 여기서도 ✕ 빼요로 고른 것을 취소할 수 있어요
-    function openCart() {
+    // 바구니 보기 (= 계산 1단계). 옷 칸 구분 없이 담은 순서대로 모두 보여요. 여기서도 ✕ 빼요로 고른 것을 취소할 수 있어요
+    //   mode "view": 🧺 바구니 보기 버튼 / "pay": 🍓 계산해요 버튼 (바구니가 비었을 때만 버튼이 달라요)
+    function openCart(mode = "pay") {
       document.querySelectorAll(".celebrate").forEach((el) => el.remove());
-      note("cart-open", { n: G.cart.length });
+      note("cart-open", { n: G.cart.length, mode });
       const box = document.createElement("div");
       box.className = "celebrate";
       box.setAttribute("style", theme("pink"));
@@ -666,7 +682,7 @@
               <p class="cart-sum">모두 <b>🍓${cartTotal()}</b></p>`
             : `<div class="medal-big" aria-hidden="true">🧺</div><p>바구니가 비어 있어요.</p>`}
           <div class="modal-btns">
-            ${items.length ? `<button class="big-btn" data-act="buy">🍓 이걸로 살래요!</button>` : `<button class="big-btn" data-act="room">🚪 내 방에 가요</button>`}
+            ${items.length ? `<button class="big-btn" data-act="buy">🍓 이걸로 살래요!</button>` : mode === "pay" ? `<button class="big-btn" data-act="room">🚪 내 방에 가요</button>` : ""}
             <button class="big-btn alt" data-act="close">더 고를래요</button>
           </div>
         </div>`;
@@ -712,6 +728,7 @@
       save();
       Sound.chime();
       $("#bag b").textContent = 0;
+      $("#bag b").classList.add("zero");
       bump($("#bag"));
       redrawCards();
       drawPick();

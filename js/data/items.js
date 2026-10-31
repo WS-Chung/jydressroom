@@ -136,9 +136,10 @@ window.ITEMS = [
   { id: "h-berry", cat: "hat", name: "딸기 모자", tone: "빨강", shape: "berrycap", color: "#ef5350" },
   { id: "h-bucket", cat: "hat", name: "연두 벙거지 모자", tone: "초록", shape: "bucket", color: "#c5e1a5" },
   { id: "h-stars", cat: "hat", name: "별 머리핀", tone: "노랑", shape: "starpins", color: "#ffd54f" },
-  { id: "h-melody", cat: "hat", name: "마이멜로디 모자", tone: "분홍", shape: "melodyhood", color: "#f7a1c4", char: "melody" },
-  { id: "h-kuromi", cat: "hat", name: "쿠로미 모자", tone: "검정", shape: "kuromihood", color: "#3a3347", color2: "#f7a1c4", char: "kuromi" },
-  { id: "h-hachu", cat: "hat", name: "하츄핑 머리띠", tone: "분홍", shape: "hachuband", color: "#ff8cc6", char: "hachu" },
+  // 캐릭터 머리띠: 색 머리띠(color, 테두리 color2) 위에 캐릭터 그림(motif)을 얹어요
+  { id: "h-melody", cat: "hat", name: "마이멜로디 머리띠", tone: "분홍", shape: "charband", color: "#f7a1c4", motif: "melody", char: "melody" },
+  { id: "h-kuromi", cat: "hat", name: "쿠로미 머리띠", tone: "검정", shape: "charband", color: "#3a3347", color2: "#f7a1c4", motif: "kuromi", char: "kuromi" },
+  { id: "h-hachu", cat: "hat", name: "하츄핑 머리띠", tone: "분홍", shape: "charband", color: "#ff8cc6", motif: "hachu", char: "hachu" },
 ];
 
 window.BASE = [

@@ -397,11 +397,13 @@
   }
 
   // ───────── 모자 ─────────
-  const COVER = new Set(["straw", "cap", "beanie", "yellow", "beret", "berrycap", "bucket", "melodyhood", "kuromihood"]);
-  const HOOD = "M 40 104 Q 34 22 100 18 Q 166 22 160 104 Q 160 134 140 142 L 60 142 Q 40 134 40 104 Z M 100 52 C 72 52 58 70 58 96 C 58 120 78 132 100 132 C 122 132 142 120 142 96 C 142 70 128 52 100 52 Z";
+  const COVER = new Set(["straw", "cap", "beanie", "yellow", "beret", "berrycap", "bucket"]);
+  // 캐릭터 머리띠 위 그림의 높이 (세로로 긴 그림은 조금 위로 올려서 앞머리를 덜 가리게)
+  const CHARBAND_Y = { melody: 16, kuromi: 18, hachu: 24 };
   function drawHat(it, p) {
     const c = it.color, L = dark(c), c2 = it.color2 || light(c, 0.55), f = p.fill(it);
-    const band = (col) => `<path d="M 56 68 Q 58 30 100 28 Q 142 30 144 68" stroke="${dark(col)}" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M 56 68 Q 58 30 100 28 Q 142 30 144 68" stroke="${col}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+    // 머리띠 (line: 테두리 색. 까만 머리띠는 분홍 테두리라야 까만 머리 위에서 보여요)
+    const band = (col, line = dark(col)) => `<path d="M 56 68 Q 58 30 100 28 Q 142 30 144 68" stroke="${line}" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M 56 68 Q 58 30 100 28 Q 142 30 144 68" stroke="${col}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
     switch (it.shape) {
       case "straw":
         return `<ellipse cx="100" cy="58" rx="76" ry="15" fill="${c}" stroke="${L}" stroke-width="2"/><path d="M 34 62 Q 100 74 166 62" stroke="${L}" stroke-width="1" opacity=".5" fill="none"/>`
@@ -446,14 +448,11 @@
         return o + sh("M 76 26 L 88 14 L 92 22 L 100 8 L 108 22 L 112 14 L 124 26 Q 100 34 76 26 Z", "#66bb6a", "#388e3c") + `<path d="M 100 9 L 101 0" stroke="#388e3c" stroke-width="3" stroke-linecap="round"/>`;
       }
       case "starpins": return star(126, 48, 8, c, L) + star(140, 66, 6.5, "#ff8fab", dark("#ff8fab")) + star(110, 38, 5.5, "#90caf9", dark("#90caf9"));
-      case "melodyhood":
-        return [[74, -14], [126, 14]].map(([x, r]) => `<ellipse cx="${x}" cy="-2" rx="12" ry="28" transform="rotate(${r} ${x} -2)" fill="${c}" stroke="${L}" stroke-width="2"/>`).join("")
-          + `<path d="${HOOD}" fill="${c}" fill-rule="evenodd" stroke="${L}" stroke-width="2" stroke-linejoin="round"/>` + flower(136, -18, "#ff6fa8", 2.4, "#ffe082");
-      case "kuromihood":
-        return sh("M 60 40 Q 40 4 18 -14 Q 52 -10 84 26 Z", c, c2) + sh(mirror("M 60 40 Q 40 4 18 -14 Q 52 -10 84 26 Z"), c, c2)
-          + `<path d="${HOOD}" fill="${c}" fill-rule="evenodd" stroke="${c2}" stroke-width="2" stroke-linejoin="round"/>`
-          + `<circle cx="100" cy="36" r="9" fill="${c2}"/><circle cx="96.5" cy="35" r="2" fill="${c}"/><circle cx="103.5" cy="35" r="2" fill="${c}"/><rect x="96" y="41.5" width="8" height="4.5" rx="1.5" fill="${c2}"/>`;
-      case "hachuband": return band(c) + motif("hachu", 100, 24, 1.5);
+      // 캐릭터 머리띠: 색 머리띠 + 정수리에 캐릭터 그림 (진짜 그림 파일이 있으면 그 그림)
+      case "charband": case "hachuband": {
+        const name = it.motif || "hachu";
+        return band(c, it.color2 || dark(c)) + motif(name, 100, CHARBAND_Y[name] ?? 24, 1.5);
+      }
       default: return "";
     }
   }
