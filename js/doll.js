@@ -128,7 +128,7 @@
   // 그림은 늦게 불러와지니까, 캐릭터 무늬 자리(g.char-motif)에 표시를 해 두고 불러온 뒤 그 자리만 바꿔 끼워요.
   const CHAR_FILES = window.CHARACTER_IMAGES || {};
   const charImg = {};       // 불러온 그림 주소 (이름 → 주소)
-  const CHAR_BOX = 38;      // 그림 상자 (무늬 단위 · 가로세로). 흉내 그림(지름 약 26 + 귀)과 비슷한 크기
+  const CHAR_BOX = 44;      // 그림 상자 (무늬 단위 · 가로세로). 온몸 그림이라 흉내 그림(얼굴, 지름 약 26 + 귀)보다 조금 크게
   const charImage = (name) => `<image class="char-img" href="${charImg[name]}" x="${-CHAR_BOX / 2}" y="${-CHAR_BOX / 2 - 4}" width="${CHAR_BOX}" height="${CHAR_BOX}" preserveAspectRatio="xMidYMid meet"/>`;
   const motif = (name, x, y, s) => {
     if (!MOTIFS[name]) return "";

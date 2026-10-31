@@ -14,3 +14,15 @@
 - 파일 이름이나 위치를 바꾸려면 `js/data/items.js`의 `CHARACTER_IMAGES`를 고쳐요
 - 이 폴더의 그림 파일은 `.gitignore`·`.vercelignore`로 GitHub·Vercel에 올라가지 않아요. `index.html`을 이 PC에서 열 때만 보여요
 - 쿠로미 모자·마이멜로디 모자는 모자 모양 자체가 캐릭터라 그림 파일과 상관없이 그대로예요
+
+## 지금 들어 있는 그림 (집에서 보는 용도로만)
+
+배경이 투명한지(네 귀퉁이 투명도 0) 확인했고, 마이멜로디·쿠로미는 바깥 투명 여백을 잘라 냈어요.
+
+| 파일 | 원본 | 크기 |
+| --- | --- | --- |
+| `melody.png` | Hello Kitty Wiki (Fandom) `Sanrio_Characters_My_Melody_Image030.png` | 218×383 |
+| `kuromi.png` | Hello Kitty Wiki (Fandom) `List-kuromi.png` | 464×556 |
+| `hachu.png` | Catch! Teenieping Wiki (Fandom) `Heartsping_S1_Render_1.png` | 800×659 |
+
+캐릭터의 권리는 산리오(마이멜로디·쿠로미)와 SAMG엔터테인먼트(하츄핑)에 있어요.
