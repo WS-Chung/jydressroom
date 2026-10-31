@@ -856,15 +856,32 @@
     const gave = (w) => !!giftOf(w) && G.gifted.includes(giftOf(w).id);
     // 서는 순서: 아빠 · 정연 · 정우 · 엄마 (선물을 받은 가족만 함께 나와요)
     const order = ["dad", "me", "twin", "mom"].filter((w) => w === "me" || gave(w));
-    const people = order.map((w) => (w === "me"
-      ? `<div class="person kid me">${Doll.figure(G.outfit, { label: KID })}</div>`
-      : `<div class="person ${w === "twin" ? "kid" : "adult"}">${Doll.family(w, { label: famName(w) })}</div>`)).join("");
+    // 키(cm, js/data/site.js)에 맞춰 크기를 정해요. u = 1cm의 화면 길이
+    //   그림 높이 = 키 × u × (그림 전체 높이 ÷ 머리 꼭대기~발바닥 높이)
+    //   u는 가장 키 큰 사람이 장면 높이의 74%(혼자면 64%)가 되고, 모두 장면 폭 안에 들어오는 값
+    const heightOf = (w) => (w === "me" ? SITE.childHeight : (SITE.family[w] || {}).height) || 110;
+    const OVERLAP = 0.16; // 그림 양옆 빈자리만큼 살짝 겹쳐 세움
+    const figs = order.map((w) => {
+      const b = w === "me" || w === "twin" ? Doll.BODY.kid : Doll.BODY.adult;
+      const h = (heightOf(w) * b.h) / (b.feet - b.top);
+      return { w, b, h, width: (h * b.w) / b.h };
+    });
+    const tallest = Math.max(...order.map(heightOf));
+    const span = figs.reduce((a, f, k) => a + f.width * (k ? 1 - OVERLAP : 1), 0);
+    const u = `min(calc(${order.length > 1 ? 74 : 64}cqh / ${tallest}), calc(94cqw / ${span.toFixed(1)}))`;
+    const people = figs.map((f, k) => {
+      const style = `height:calc(var(--u) * ${f.h.toFixed(1)});width:calc(var(--u) * ${f.width.toFixed(1)})${k ? `;margin-left:calc(var(--u) * ${(-f.width * OVERLAP).toFixed(1)})` : ""}`;
+      const svg = f.w === "me"
+        ? Doll.figure(G.outfit, { label: KID, viewBox: f.b.viewBox })
+        : Doll.family(f.w, { label: famName(f.w), viewBox: f.b.viewBox });
+      return `<div class="person${f.w === "me" ? " me" : ""}" data-who="${f.w}" style="${style}">${svg}</div>`;
+    }).join("");
     const fam = ["dad", "mom", "twin"].filter(gave).map(famName);
     app.innerHTML = `
       <section class="finale" style="${theme(place.theme)}">
         <div class="scene" id="scene">
           ${Scenes.svg(id)}
-          <div class="scene-people" style="--n:${order.length}">${people}</div>
+          <div class="scene-people" style="--u:${u}">${people}</div>
           <div class="flash" id="flash" aria-hidden="true"></div>
         </div>
         <div class="finale-side">

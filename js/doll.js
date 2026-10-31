@@ -123,7 +123,29 @@
       return `<ellipse cx="-14" cy="0" rx="6.5" ry="4.5" transform="rotate(-25 -14 0)" fill="#fff" stroke="#ffb3d6" stroke-width="1.2"/><ellipse cx="14" cy="0" rx="6.5" ry="4.5" transform="rotate(25 14 0)" fill="#fff" stroke="#ffb3d6" stroke-width="1.2"/>${heart(0, -14, 5.5, D, "#d93a85")}<circle r="12" fill="${P}" stroke="#e46aa8" stroke-width="1.2"/><ellipse cx="-4.3" cy="0" rx="2.2" ry="2.9" fill="#3a2433"/><ellipse cx="4.3" cy="0" rx="2.2" ry="2.9" fill="#3a2433"/><circle cx="-3.6" cy="-1" r=".8" fill="#fff"/><circle cx="5" cy="-1" r=".8" fill="#fff"/><ellipse cx="-7.5" cy="4" rx="2" ry="1.2" fill="${D}" opacity=".6"/><ellipse cx="7.5" cy="4" rx="2" ry="1.2" fill="${D}" opacity=".6"/><path d="M -2 4.5 Q 0 6.5 2 4.5" stroke="#3a2433" stroke-width=".9" fill="none"/>${heart(0, -7, 1.8, "#fff")}`;
     },
   };
-  const motif = (name, x, y, s) => (MOTIFS[name] ? `<g transform="translate(${x} ${y}) scale(${s})">${MOTIFS[name]()}</g>` : "");
+  // ───────── 진짜 캐릭터 그림 (넣었을 때만) ─────────
+  // js/data/items.js의 CHARACTER_IMAGES 주소에 PNG가 있으면 옷 무늬에 그 그림을 쓰고, 없으면 위의 흉내 그림을 써요.
+  // 그림은 늦게 불러와지니까, 캐릭터 무늬 자리(g.char-motif)에 표시를 해 두고 불러온 뒤 그 자리만 바꿔 끼워요.
+  const CHAR_FILES = window.CHARACTER_IMAGES || {};
+  const charImg = {};       // 불러온 그림 주소 (이름 → 주소)
+  const CHAR_BOX = 38;      // 그림 상자 (무늬 단위 · 가로세로). 흉내 그림(지름 약 26 + 귀)과 비슷한 크기
+  const charImage = (name) => `<image class="char-img" href="${charImg[name]}" x="${-CHAR_BOX / 2}" y="${-CHAR_BOX / 2 - 4}" width="${CHAR_BOX}" height="${CHAR_BOX}" preserveAspectRatio="xMidYMid meet"/>`;
+  const motif = (name, x, y, s) => {
+    if (!MOTIFS[name]) return "";
+    const isChar = Object.prototype.hasOwnProperty.call(CHAR_FILES, name);
+    return `<g transform="translate(${x} ${y}) scale(${s})"${isChar ? ` class="char-motif" data-char="${name}"` : ""}>${charImg[name] ? charImage(name) : MOTIFS[name]()}</g>`;
+  };
+  function setCharacterImage(name, src) {
+    if (!MOTIFS[name] || !src) return;
+    charImg[name] = src;
+    document.querySelectorAll(`g.char-motif[data-char="${name}"]`).forEach((g) => { g.innerHTML = charImage(name); });
+  }
+  for (const [name, src] of Object.entries(CHAR_FILES)) {
+    if (!src) continue;
+    const im = new Image();
+    im.onload = () => setCharacterImage(name, src); // 파일이 없으면 조용히 흉내 그림 그대로
+    im.src = src;
+  }
 
   // ───────── 몸 (정연이·정우 같은 크기) ─────────
   const ARM_L = "M 76 150 Q 64 192 61 230";
@@ -444,26 +466,54 @@
     short: "M 50 92 Q 46 30 100 30 Q 154 30 150 92 L 151 114 Q 146 122 140 114 L 60 114 Q 54 122 49 114 Z",
     wavy: "M 50 90 Q 46 28 100 28 Q 154 28 150 90 Q 162 118 152 146 Q 164 176 154 210 Q 128 228 100 220 Q 72 228 46 210 Q 36 176 48 146 Q 38 118 50 90 Z",
     princess: "M 50 90 Q 46 28 100 28 Q 154 28 150 90 L 154 194 Q 100 210 46 194 Z",
+    boy: "M 51 86 Q 46 27 100 26 Q 154 27 149 86 Q 140 60 100 58 Q 60 60 51 86 Z", // 뒷머리가 귀 아래로 내려오지 않게
+    jadoo: "M 48 92 Q 44 28 100 28 Q 156 28 152 92 L 153 120 Q 146 128 138 122 L 62 122 Q 54 128 47 120 Z", // 턱까지 오는 짧은 단발
   };
+  // 앞머리: 이마만 덮고, 옆은 얼굴 테두리(가운데 100,82 · 가로 47 · 세로 46) 바깥으로만 내려와요 (볼을 가리지 않게)
   const HF = {
-    bangs: "M 52 98 Q 46 30 100 30 Q 154 30 148 98 Q 147 82 141 72 Q 132 80 122 71 Q 112 81 100 73 Q 88 81 78 71 Q 68 80 59 72 Q 53 82 52 98 Z",
-    side: "M 52 98 Q 46 30 100 30 Q 154 30 148 98 Q 146 72 132 60 Q 112 50 92 60 Q 72 68 60 76 Q 54 84 52 98 Z",
-    boy: "M 52 94 Q 48 32 100 32 Q 152 32 148 94 Q 146 76 139 66 L 131 74 L 124 61 L 114 71 L 106 59 L 98 71 L 88 59 L 80 71 L 72 61 L 64 72 Q 56 80 52 94 Z",
+    bangs: "M 50 92 Q 44 30 100 29 Q 156 30 150 92 Q 149 78 144 70 Q 134 80 122 71 Q 112 81 100 73 Q 88 81 78 71 Q 66 80 56 70 Q 51 78 50 92 Z",
+    side: "M 50 92 Q 44 30 100 29 Q 156 30 150 92 Q 149 70 136 58 Q 114 48 92 58 Q 72 66 60 70 Q 51 76 50 92 Z",
+    blunt: "M 50 92 Q 44 30 100 29 Q 156 30 150 92 Q 149 78 145 69 Q 100 75 55 69 Q 51 78 50 92 Z", // 일자 앞머리 (자두 머리)
+    // 남자아이 짧은 머리: 이마가 보이는 짧은 앞머리, 옆머리는 귀 위에서 끝
+    boy: "M 53 86 Q 48 30 100 30 Q 152 30 147 86 Q 145 72 140 62 L 132 68 L 126 56 L 116 64 L 108 54 L 100 64 L 92 54 L 84 64 L 74 56 L 68 68 L 60 62 Q 55 72 53 86 Z",
   };
-  const LOCK = "M 53 84 Q 44 130 52 172 Q 58 178 65 170 Q 58 130 64 94 Z";
-  const LOCK_WAVY = "M 53 84 Q 42 108 54 128 Q 44 150 54 174 Q 60 178 66 170 Q 58 150 64 128 Q 56 108 64 94 Z";
+  // 앞으로 내려온 옆머리: 귀를 덮고 어깨 위로 내려오되, 얼굴 테두리 안으로는 들어오지 않아요
+  const LOCK = "M 52 84 Q 40 128 46 172 Q 52 180 60 172 Q 54 130 56 98 Q 55 89 52 84 Z";
+  const LOCK_WAVY = "M 52 84 Q 38 108 47 128 Q 38 150 47 174 Q 53 180 61 172 Q 52 150 57 128 Q 50 108 56 98 Q 55 89 52 84 Z";
   const TAIL_LOW = "M 56 100 Q 30 122 33 162 Q 35 190 50 202 Q 46 172 57 150 Q 66 128 64 106 Z";
   const TAIL_HIGH = "M 66 50 Q 30 38 24 80 Q 20 122 38 152 Q 36 112 48 86 Q 56 68 72 58 Z";
   const PONY = "M 106 30 Q 152 8 162 58 Q 168 110 150 152 Q 152 104 140 74 Q 128 48 108 40 Z";
-  const SIDEPONY = "M 138 80 Q 172 88 168 140 Q 166 180 150 198 Q 152 160 146 132 Q 140 108 132 96 Z";
+  const SIDEPONY = "M 140 64 Q 178 72 173 130 Q 170 176 156 198 Q 158 156 153 128 Q 149 100 141 84 Z"; // 뒤에 그려서 얼굴 뒤로 지나가요
+  const JADOO_TAIL = "M 58 52 Q 40 38 22 42 Q 32 50 28 58 Q 42 62 56 68 Z";                           // 자두 머리: 귀 위에서 옆으로 뻗친 짧은 꽁지
   const CURLS_BACK = [[50, 70], [58, 46], [76, 30], [100, 24], [124, 30], [142, 46], [150, 70], [154, 96], [152, 122], [146, 144], [48, 96], [48, 122], [54, 144], [70, 150], [130, 150]];
   const CURLS_FRONT = [[62, 64], [76, 56], [92, 53], [108, 53], [124, 56], [138, 64]];
 
+  // 뿌까 머리: 땋은 머리를 돌돌 말아 올린 동그란 머리 (바깥 고리에 땋은 마디 8개 + 안쪽 고리 4개)
+  // 땋은 마디의 줄 색: 까만 머리에는 밝은 줄, 밝은 머리에는 진한 줄 (테두리 색만으로는 까만 머리에서 안 보여요)
+  const texture = (col) => { const [r, g, b] = rgb(col); return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.4 ? light(col, 0.32) : dark(col, 0.3); };
+  function braidBun(x, y, r, col, L) {
+    let o = `<circle cx="${x}" cy="${y}" r="${r}" fill="${col}" stroke="${L}" stroke-width="2"/>`;
+    const T = texture(col);
+    const ring = (n, rr, rx, ry, w) => {
+      for (let k = 0; k < n; k++) {
+        const a = (k * 2 * Math.PI) / n;
+        const cx = f1(x + rr * Math.cos(a)), cy = f1(y + rr * Math.sin(a));
+        o += `<ellipse cx="${cx}" cy="${cy}" rx="${f1(rx)}" ry="${f1(ry)}" transform="rotate(${f1((a * 180) / Math.PI + 90)} ${cx} ${cy})" fill="${col}" stroke="${T}" stroke-width="${w}"/>`;
+      }
+    };
+    ring(8, r * 0.64, r * 0.36, r * 0.24, 1.4);
+    ring(4, r * 0.24, r * 0.24, r * 0.16, 1.2);
+    return o + `<path d="M ${f1(x - r * 0.5)} ${f1(y - r * 0.55)} Q ${x} ${f1(y - r * 0.85)} ${f1(x + r * 0.5)} ${f1(y - r * 0.55)}" stroke="${light(col, 0.45)}" stroke-width="2" fill="none" opacity=".6"/>`;
+  }
   function braid(x0, y0, x1, y1, n, col, L) {
     let o = "";
+    const T = texture(col);
     for (let k = 0; k < n; k++) {
       const t = k / (n - 1);
-      o += `<ellipse cx="${f1(x0 + (x1 - x0) * t + (k % 2 ? 1.5 : -1.5))}" cy="${f1(y0 + (y1 - y0) * t)}" rx="8" ry="9" fill="${col}" stroke="${L}" stroke-width="1.8"/>`;
+      const x = f1(x0 + (x1 - x0) * t + (k % 2 ? 1.5 : -1.5)), y = f1(y0 + (y1 - y0) * t);
+      // 마디 하나 + 안쪽 땋은 결 (V 모양)
+      o += `<ellipse cx="${x}" cy="${y}" rx="8" ry="9" fill="${col}" stroke="${L}" stroke-width="1.8"/>`
+        + `<path d="M ${f1(x - 5)} ${f1(y - 4)} Q ${x} ${f1(y + 3)} ${f1(x + 5)} ${f1(y - 4)}" stroke="${T}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
     }
     return o + `<path d="M ${x1 - 6} ${y1 + 8} Q ${x1} ${y1 + 22} ${x1 + 6} ${y1 + 8} Z" fill="${col}" stroke="${L}" stroke-width="1.8"/>` + tie(x1, y1 + 7);
   }
@@ -482,7 +532,10 @@
       case "short": return s(HB.short);
       case "princess": return s(HB.princess) + [[52, 200], [68, 208], [84, 212], [116, 212], [132, 208], [148, 200]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="10" fill="${col}" stroke="${L}" stroke-width="2"/>`).join("");
       case "curly": return CURLS_BACK.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="18" fill="${col}" stroke="${L}" stroke-width="2"/>`).join("") + `<ellipse cx="100" cy="88" rx="52" ry="58" fill="${col}"/>`;
-      case "boy": return s(HB.short);
+      case "sidepony": return s(SIDEPONY) + s(HB.head);
+      case "pucca": return s(HB.head);
+      case "jadoo": return (cover ? "" : s(JADOO_TAIL) + s(mirror(JADOO_TAIL))) + s(HB.jadoo);
+      case "boy": return s(HB.boy);
       default: return s(HB.head);
     }
   }
@@ -493,17 +546,27 @@
     switch (id) {
       case "long": case "princess": o = s(LOCK) + s(mirror(LOCK)) + s(HF.bangs); break;
       case "halfup": o = s(LOCK) + s(mirror(LOCK)) + s(HF.bangs) + (cover ? "" : bow(100, 30, "#ff6b9a", 1.1)); break;
-      case "twinlow": o = s(HF.bangs) + tie(58, 104) + tie(142, 104); break;
-      case "twinhigh": o = s(HF.bangs) + tie(68, 54) + tie(132, 54); break;
+      case "twinlow": o = s(HF.bangs) + tie(50, 106) + tie(150, 106); break;
+      case "twinhigh": o = s(HF.bangs) + tie(66, 52) + tie(134, 52); break;
       case "pony": o = s(HF.bangs) + (cover ? "" : tie(104, 33)); break;
       case "bun": o = s(HF.bangs) + (cover ? "" : `<path d="M 88 36 Q 100 42 112 36" stroke="#ff6b9a" stroke-width="4" stroke-linecap="round" fill="none"/>`); break;
-      case "braids": o = s(HF.bangs) + braid(58, 108, 54, 196, 7, col, L) + braid(142, 108, 146, 196, 7, col, L); break;
-      case "sidebraid": o = s(HF.side) + braid(140, 104, 150, 200, 7, col, L); break;
+      // 땋은 머리는 얼굴 옆(귀 아래)에서 시작해 어깨 앞으로 내려와요
+      case "braids": o = s(HF.bangs) + braid(47, 108, 45, 196, 7, col, L) + braid(153, 108, 155, 196, 7, col, L); break;
+      case "sidebraid": o = s(HF.side) + braid(153, 106, 157, 200, 7, col, L); break;
       case "wavy": o = s(LOCK_WAVY) + s(mirror(LOCK_WAVY)) + s(HF.side); break;
       case "short": o = s(HF.side); break;
-      case "sidepony": o = s(SIDEPONY) + s(HF.side) + tie(139, 86); break;
-      case "curly": o = s("M 52 92 Q 46 30 100 30 Q 154 30 148 92 Q 120 62 100 62 Q 80 62 52 92 Z") + CURLS_FRONT.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="11" fill="${col}" stroke="${L}" stroke-width="1.8"/>`).join(""); break;
-      case "boy": o = s(HF.boy); break;
+      case "sidepony": o = s(HF.side) + tie(146, 70); break;
+      case "pucca": // 뿌까 머리: 양쪽에 땋아서 돌돌 만 머리 + 빨간 리본
+        o = s(HF.bangs) + (cover ? "" : braidBun(58, 44, 19, col, L) + braidBun(142, 44, 19, col, L) + bow(70, 60, "#e53935", 0.6) + bow(130, 60, "#e53935", 0.6));
+        break;
+      case "jadoo": // 자두 머리: 일자 앞머리 + 짧은 단발 + 옆으로 뻗친 양쪽 꽁지
+        o = s(HF.blunt) + (cover ? "" : tie(56, 59) + tie(144, 59));
+        break;
+      case "curly": o = s("M 50 92 Q 44 30 100 29 Q 156 30 150 92 Q 148 74 138 66 Q 100 58 62 66 Q 52 74 50 92 Z") + CURLS_FRONT.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="11" fill="${col}" stroke="${L}" stroke-width="1.8"/>`).join(""); break;
+      case "boy": // 짧은 머리 + 뻗친 머리카락 + 짙은 눈썹
+        o = s(HF.boy) + s("M 97 31 Q 102 16 115 18 Q 106 23 105 31 Z")
+          + `<path d="M 75 80 Q 83 75 91 80 M 109 80 Q 117 75 125 80" stroke="${L}" stroke-width="3.2" fill="none" stroke-linecap="round"/>`;
+        break;
       default: o = s(HF.bangs);
     }
     return o + shine;
@@ -623,15 +686,21 @@
   }
   function family(who, opts = {}) {
     if (who === "twin") {
-      return figure({ hair: "boy", hairColor: "black", top: ROBOT_JUMPER, bottom: TWIN_PANTS, shoes: TWIN_SHOES }, { cls: opts.cls || "doll", label: opts.label });
+      return figure({ hair: "boy", hairColor: "black", top: ROBOT_JUMPER, bottom: TWIN_PANTS, shoes: TWIN_SHOES }, { cls: opts.cls || "doll", label: opts.label, viewBox: opts.viewBox });
     }
     const p = new Paint();
     let s = adultBody();
     if (who === "dad") s += suit();
     else s += momDress(p);
     s += adultHands() + adultHead(who);
-    return wrap(p, s, "0 -10 200 450", { cls: opts.cls || "doll", label: opts.label });
+    return wrap(p, s, opts.viewBox || "0 -10 200 450", { cls: opts.cls || "doll", label: opts.label });
   }
+  // 키를 맞춰 세울 때 쓰는 몸 크기 (그림 단위). 발바닥이 그림 아래 끝에 오도록 자른 viewBox,
+  // top = 머리 꼭대기, feet = 신발 바닥
+  const BODY = {
+    kid: { viewBox: "0 -20 200 386", w: 200, h: 386, top: 30, feet: 362 },
+    adult: { viewBox: "0 -10 200 438", w: 200, h: 438, top: 20, feet: 424 },
+  };
   function giftThumb(g) {
     if (g.who === "twin") return thumb(ROBOT_JUMPER);
     const p = new Paint();
@@ -652,5 +721,5 @@
     });
   }
 
-  window.Doll = { figure, thumb, hairThumb, family, giftThumb, fit, byId, resolve, motif: (n) => (MOTIFS[n] ? MOTIFS[n]() : "") };
+  window.Doll = { figure, thumb, hairThumb, family, giftThumb, fit, byId, resolve, BODY, setCharacterImage, motif: (n) => (MOTIFS[n] ? MOTIFS[n]() : "") };
 })();

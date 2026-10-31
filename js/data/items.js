@@ -17,7 +17,7 @@
     char    : 캐릭터 옷 (melody 마이멜로디 · kuromi 쿠로미 · hachu 하츄핑). 값은 SHOP.price.character
   BASE  : 처음부터 입고 있는 하얀 원피스·하얀 구두 (사지 않아도 옷장에 있어요)
   GIFTS : 가족 선물 (who는 js/data/site.js의 family와 짝)
-  HAIRS / HAIR_COLORS : 내 방 거울 앞에서 공짜로 바꾸는 머리 모양과 머리 색
+  HAIRS / HAIR_COLORS : 내 방 거울 앞에서 공짜로 바꾸는 머리 모양(그림은 doll.js의 hairBack·hairFront)과 머리 색
 */
 window.SHOP = {
   start: 100,                                   // 처음에 받는 딸기
@@ -35,6 +35,15 @@ window.CATS = [
 ];
 
 window.CHARACTERS = { melody: "마이멜로디", kuromi: "쿠로미", hachu: "하츄핑" };
+
+// 진짜 캐릭터 그림 (선택). images/characters/ 폴더에 배경이 투명한 PNG를 이 이름으로 넣으면
+// 캐릭터 옷의 무늬가 그 그림으로 바뀌어요. 파일이 없으면 js/doll.js가 그린 흉내 그림을 써요.
+// 이 폴더의 그림 파일은 git·Vercel에 올라가지 않아요 (.gitignore · .vercelignore). 집에서 index.html로 열 때만 보여요
+window.CHARACTER_IMAGES = {
+  melody: "images/characters/melody.png",
+  kuromi: "images/characters/kuromi.png",
+  hachu: "images/characters/hachu.png",
+};
 
 window.ITEMS = [
   // ── 원피스 ──
@@ -159,6 +168,8 @@ window.HAIRS = [
   { id: "princess", name: "공주 머리" },
   { id: "sidepony", name: "옆으로 묶은 머리" },
   { id: "curly", name: "뽀글뽀글 머리" },
+  { id: "pucca", name: "뿌까 머리" },
+  { id: "jadoo", name: "자두 머리" },
 ];
 
 window.HAIR_COLORS = [
