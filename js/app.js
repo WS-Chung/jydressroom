@@ -282,15 +282,6 @@
       setTimeout(() => s.remove(), 1100);
     }
   }
-  function toast(text) {
-    document.querySelectorAll(".toast").forEach((t) => t.remove());
-    const t = document.createElement("div");
-    t.className = "toast";
-    t.textContent = text;
-    document.body.appendChild(t);
-    setTimeout(() => t.remove(), 2200);
-  }
-
   // ───────── 놀이 상태 · 기록 (이 기기에 저장) ─────────
   const KEY = "berryland-now";
   const HKEY = "berryland-history";
@@ -495,7 +486,9 @@
   }
 
   // ───────── 가게·옷장 공통 ─────────
-  const tabsHtml = (tabs, cur) => `<div class="tabs" role="tablist" style="--tabs:${tabs.length}">${tabs.map((t) => `<button class="tab" role="tab" data-tab="${t.id}" aria-selected="${t.id === cur}"><span class="tab-emoji" aria-hidden="true">${t.emoji}</span><span class="tab-label">${t.label}</span></button>`).join("")}</div>`;
+  // 옷 칸 위 큰 탭 + 아래 꾸밈선 (레이스 + 🎀). 선물 탭(tab-gift)은 선물 상자처럼 금색 + 리본
+  const tabsHtml = (tabs, cur) => `<div class="tabs" role="tablist" style="--tabs:${tabs.length}">${tabs.map((t) => `<button class="tab tab-${t.id}" role="tab" data-tab="${t.id}" aria-selected="${t.id === cur}"><span class="tab-emoji" aria-hidden="true">${t.emoji}</span><span class="tab-label">${t.label.replace("·", "·<wbr>")}</span></button>`).join("")}</div>
+    <div class="shelf-divider" aria-hidden="true"><span>🍓 🎀 🍓</span></div>`;
   function bindTabs(onPick) {
     app.querySelectorAll(".tab").forEach((b) => b.addEventListener("click", () => {
       app.querySelectorAll(".tab").forEach((x) => x.setAttribute("aria-selected", String(x === b)));
@@ -524,8 +517,7 @@
       <section class="studio shop" style="${theme("pink")}">
         <div class="stage fitting">
           <div class="stage-top">
-            <div class="wallet" id="wallet" aria-live="polite"><span class="wallet-berry" aria-hidden="true">🍓</span><b id="berries">${free()}</b><span class="sr-only">쓸 수 있는 딸기</span></div>
-            <button class="icon-btn" id="mirror-reset" aria-label="처음 옷으로 돌아가기">🔄</button>
+            <div class="wallet" id="wallet" aria-live="polite"><span class="wallet-label">남은 딸기</span><span class="wallet-num"><span class="wallet-berry" aria-hidden="true">🍓</span><b id="berries">${free()}</b></span></div>
           </div>
           <div class="doll-wrap" id="mirror"></div>
           <div class="pick" id="pick" aria-live="polite"></div>
@@ -569,14 +561,18 @@
         $("#pick").innerHTML = `<p class="pick-hint">${G.cart.length ? "다 골랐으면 '계산해요'를 눌러요." : "옷을 누르면 입어 볼 수 있어요."}</p>`;
         return;
       }
+      // 옷 이름·값 글자는 없이 버튼만 크게 (값은 옷 칸의 🍓 표시로 봐요). 담을 수 있으면 숨 쉬듯 커졌다 작아지고 반짝여요
       const p = priceOf(it);
       let act;
       if (G.gifted.includes(it.id)) act = `<span class="chip hot">💝 선물했어요</span>`;
       else if (G.owned.includes(it.id)) act = `<span class="chip">✔ 샀어요</span>`;
       else if (G.cart.includes(it.id)) act = `<span class="chip hot">🧺 바구니에 담았어요</span><button class="small-btn" id="cart-out" data-quiet>✕ 빼요</button>`;
-      else if (free() >= p) act = `<button class="big-btn buy-btn" id="cart-in" data-quiet>🧺 바구니에 담아요</button>`;
-      else act = `<p class="pick-warn">딸기가 모자라요 😢</p>${G.cart.length ? `<p class="pick-hint small">바구니에서 하나 빼 볼까요?</p>` : ""}`;
-      $("#pick").innerHTML = `<p class="pick-name">${it.char ? "⭐ " : ""}${esc(labelOf(it))} <span class="price${it.char ? " hot" : ""}">🍓${p}</span></p><div class="pick-act">${act}</div>`;
+      else if (free() >= p) {
+        act = `<div class="cart-in-wrap"><button class="cart-in-btn" id="cart-in" data-quiet aria-label="${esc(labelOf(it))}, 딸기 ${p}개, 바구니에 담아요">
+            <span class="ci-emoji" aria-hidden="true">🧺</span><span class="ci-text">바구니에 담아요</span></button>
+          <span class="twinkle t1" aria-hidden="true">✨</span><span class="twinkle t2" aria-hidden="true">✨</span><span class="twinkle t3" aria-hidden="true">✨</span><span class="twinkle t4" aria-hidden="true">✨</span></div>`;
+      } else act = `<p class="pick-warn">딸기가 모자라요 😢</p>${G.cart.length ? `<p class="pick-hint small">바구니에서 하나 빼 볼까요?</p>` : ""}`;
+      $("#pick").innerHTML = `<div class="pick-act">${act}</div>`;
     };
     const bump = (el) => { el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); };
     const updateWallet = (delta) => {
@@ -648,14 +644,6 @@
       if (e.target.closest("#cart-in")) cartIn(it);
       else if (e.target.closest("#cart-out")) cartOut(it.id);
     });
-    $("#mirror-reset").addEventListener("click", () => {
-      G.mirror = baseLook();
-      pickId = null;
-      save();
-      app.querySelectorAll(".item-card.on").forEach((c) => c.classList.remove("on"));
-      drawMirror(false);
-      drawPick();
-    });
     $("#bag").addEventListener("click", () => openCart("view"));
     $("#done").addEventListener("click", () => openCart("pay"));
 
@@ -682,7 +670,7 @@
               <p class="cart-sum">모두 <b>🍓${cartTotal()}</b></p>`
             : `<div class="medal-big" aria-hidden="true">🧺</div><p>바구니가 비어 있어요.</p>`}
           <div class="modal-btns">
-            ${items.length ? `<button class="big-btn" data-act="buy">🍓 이걸로 살래요!</button>` : mode === "pay" ? `<button class="big-btn" data-act="room">🚪 내 방에 가요</button>` : ""}
+            ${items.length ? `<button class="big-btn" data-act="buy">🍓 다 골랐어요</button>` : mode === "pay" ? `<button class="big-btn" data-act="room">🚪 내 방에 가요</button>` : ""}
             <button class="big-btn alt" data-act="close">더 고를래요</button>
           </div>
         </div>`;
@@ -886,19 +874,20 @@
     const tallest = Math.max(...order.map(heightOf));
     const span = figs.reduce((a, f, k) => a + f.width * (k ? 1 - OVERLAP : 1), 0);
     const u = `min(calc(${order.length > 1 ? 74 : 64}cqh / ${tallest}), calc(94cqw / ${span.toFixed(1)}))`;
-    const people = figs.map((f, k) => {
+    // 장면 속 사람들 (사진에도 같은 장면을 쓰니까 부를 때마다 새로 그려요: 그림 속 무늬 id가 겹치지 않게)
+    const peopleHtml = () => figs.map((f, k) => {
       const style = `height:calc(var(--u) * ${f.h.toFixed(1)});width:calc(var(--u) * ${f.width.toFixed(1)})${k ? `;margin-left:calc(var(--u) * ${(-f.width * OVERLAP).toFixed(1)})` : ""}`;
       const svg = f.w === "me"
         ? Doll.figure(G.outfit, { label: KID, viewBox: f.b.viewBox })
         : Doll.family(f.w, { label: famName(f.w), viewBox: f.b.viewBox });
       return `<div class="person${f.w === "me" ? " me" : ""}" data-who="${f.w}" style="${style}">${svg}</div>`;
     }).join("");
+    const sceneInner = (pid) => `${Scenes.svg(pid)}<div class="scene-people" style="--u:${u}">${peopleHtml()}</div>`;
     const fam = ["dad", "mom", "twin"].filter(gave).map(famName);
     app.innerHTML = `
       <section class="finale" style="${theme(place.theme)}">
         <div class="scene" id="scene">
-          ${Scenes.svg(id)}
-          <div class="scene-people" style="--u:${u}">${people}</div>
+          ${sceneInner(id)}
           <div class="flash" id="flash" aria-hidden="true"></div>
         </div>
         <div class="finale-side">
@@ -911,19 +900,106 @@
         </div>
       </section>
       <p class="rotate-hint">📱 휴대폰을 옆으로 돌리면 더 크게 보여요</p>`;
-    const t = setTimeout(() => confetti(30, ["🎉", "✨", "💖", "🍓", "🌈", "⭐"]), 450);
-    cleanup = () => clearTimeout(t);
-    $("#photo").addEventListener("click", () => {
+    const timers = [];
+    const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+    later(() => confetti(30, ["🎉", "✨", "💖", "🍓", "🌈", "⭐"]), 450);
+    cleanup = () => timers.forEach(clearTimeout);
+
+    // ── 사진 찍기: 찰칵 → 사진이 나오고(하얗다가 천천히 보여요) → 우리 집에 붙어요
+    //    첫 사진은 벽에 건 금색 액자에, 그다음부터는 냉장고에 자석으로 (냉장고 자리 6개, 넘치면 옛 사진 위에)
+    //    사진 목록은 G.photoList [{ place, t }] 에 남아서, 다시 찍으면 전에 찍은 사진도 그대로 붙어 있어요
+    if (!Array.isArray(G.photoList)) G.photoList = [];
+    const FRIDGE = 6;
+    const MAGNETS = ["🍓", "🌸", "⭐", "💖", "🍒", "🌈"];
+    const TILT = [-7, 5, -4, 8, -6, 4];
+    const slotOf = (k) => (k === 0 ? 0 : ((k - 1) % FRIDGE) + 1);
+    const polaroid = (p, k) => {
+      const pl = MENUS.find((m) => m.id === p.place) || place;
+      const d = new Date(p.t);
+      return `<figure class="polaroid" style="--tilt:${k ? TILT[(k - 1) % TILT.length] : 0}deg">
+        <div class="pol-in"><div class="scene snap" aria-hidden="true">${sceneInner(p.place)}</div>
+        <figcaption class="pcap">${pl.emoji} ${d.getMonth() + 1}월 ${d.getDate()}일</figcaption></div>
+        ${k ? `<span class="magnet" aria-hidden="true">${MAGNETS[(k - 1) % MAGNETS.length]}</span>` : ""}</figure>`;
+    };
+    const STRING = `<svg class="pw-string" viewBox="0 0 100 24" aria-hidden="true"><path d="M 12 24 L 50 3 L 88 24" stroke="#8d6e63" stroke-width="1.6" fill="none"/><circle cx="50" cy="3" r="2.6" fill="#6d4c41"/></svg>`;
+
+    function openWall() {
+      const P = G.photoList;
+      const k = P.length - 1;
+      const slot = slotOf(k);
+      const shown = {}; // 자리마다 가장 최근 사진 (새 사진은 날아와서 붙어요)
+      P.forEach((p, i) => { if (i < k) shown[slotOf(i)] = polaroid(p, i); });
+      document.querySelectorAll(".celebrate").forEach((el) => el.remove());
+      const box = document.createElement("div");
+      box.className = "celebrate photo-wall";
+      box.setAttribute("style", theme(place.theme));
+      box.innerHTML = `<div class="celebrate-box photo-box" role="dialog" aria-modal="true" aria-label="사진">
+        <h2 id="pw-title">📸 찰칵!</h2>
+        <div class="photo-room">
+          <div class="pw-frame">${STRING}<div class="pw-mat"><div class="slot" data-slot="0">${shown[0] || ""}</div></div></div>
+          <span class="pw-deco" aria-hidden="true">🪴</span>
+          <div class="fridge"><i class="handle h1"></i><i class="handle h2"></i>
+            ${Array.from({ length: FRIDGE }, (_, j) => `<div class="slot fslot f${j + 1}" data-slot="${j + 1}">${shown[j + 1] || ""}</div>`).join("")}
+          </div>
+        </div>
+        <p id="pw-text">사진이 나오고 있어요.</p>
+        <div class="modal-btns"><button class="big-btn" data-act="ok">좋아요!</button><button class="big-btn alt" data-act="again">📸 또 찍을래요</button></div>
+      </div>`;
+      const room = box.querySelector(".photo-room");
+      const tmp = document.createElement("div");
+      tmp.innerHTML = polaroid(P[k], k);
+      const fly = tmp.firstElementChild;
+      fly.classList.add("flying", "developing");
+      room.appendChild(fly);
+      box.addEventListener("click", (e) => {
+        const act = e.target.closest("[data-act]")?.dataset.act;
+        if (!act) return;
+        box.remove();
+        if (act === "again") later(takePhoto, 150);
+      });
+      document.body.appendChild(box);
+      box.querySelector(".modal-btns button").focus();
+
+      // 1.5초 뒤 제자리로 날아가서 붙어요 (위치·크기 차이만큼 옮기고 줄였다가, 다 오면 그 자리에 넣어요)
+      later(() => {
+        if (!box.isConnected) return;
+        const target = box.querySelector(`.slot[data-slot="${slot}"]`);
+        const stick = () => {
+          if (!box.isConnected) return;
+          target.innerHTML = "";
+          fly.getAnimations?.().forEach((an) => an.cancel());
+          fly.classList.remove("flying", "developing");
+          fly.classList.add("stuck");
+          target.appendChild(fly);
+          Sound.pop();
+          sparkleOn(target);
+          const onFridge = Math.min(k, FRIDGE);
+          box.querySelector("#pw-title").textContent = slot ? "🧲 냉장고에 붙였어요!" : "🖼️ 액자에 넣었어요!";
+          box.querySelector("#pw-text").textContent = slot ? `냉장고에 사진이 ${onFridge}장 있어요.` : "벽에 예쁘게 걸어 두었어요.";
+        };
+        const a = fly.getBoundingClientRect();
+        const b = target.getBoundingClientRect();
+        if (!fly.animate || matchMedia("(prefers-reduced-motion: reduce)").matches || !a.width) { stick(); return; }
+        fly.animate([{ transform: "none" }, { transform: `translate(${b.left - a.left}px, ${b.top - a.top}px) scale(${b.width / a.width})` }],
+          { duration: 750, easing: "cubic-bezier(.45,.05,.3,1)", fill: "forwards" }).onfinish = stick;
+      }, 1500);
+    }
+
+    function takePhoto() {
+      if (!$("#flash")) return;
       Sound.shutter();
       const f = $("#flash");
       f.classList.remove("on");
       void f.offsetWidth;
       f.classList.add("on");
       G.photos = (G.photos || 0) + 1;
+      G.photoList.push({ place: id, t: Date.now() });
+      if (G.photoList.length > 31) G.photoList.splice(1, 1); // 액자 사진은 두고 가장 옛 냉장고 사진부터 정리
       note("photo", { id });
       save();
-      toast("찰칵! 멋진 사진이에요 📸");
-    });
+      later(openWall, 450);
+    }
+    $("#photo").addEventListener("click", takePhoto);
   }
 
   // ───────── 어른용 기록 (#/parent) ─────────
@@ -1082,7 +1158,7 @@
             <label class="toggle"><input type="checkbox"> 켜고 끄기</label>
             <span class="chip">이름표</span>
             <span class="chip hot">⭐ 눈에 띄는 이름표</span>
-            <span class="wallet"><span class="wallet-berry" aria-hidden="true">🍓</span><b>100</b></span>
+            <span class="wallet"><span class="wallet-label">남은 딸기</span><span class="wallet-num"><span class="wallet-berry" aria-hidden="true">🍓</span><b>100</b></span></span>
             <a class="back-link" href="#/">처음으로</a>
           </div>
         </div>
@@ -1108,7 +1184,7 @@
   function route() {
     nav = null;
     if (cleanup) { cleanup(); cleanup = null; }
-    document.querySelectorAll(".celebrate, .float-note, .toast, .confetti").forEach((el) => el.remove());
+    document.querySelectorAll(".celebrate, .float-note, .confetti").forEach((el) => el.remove());
 
     const [a, b] = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
     document.body.dataset.view = a || "home";
