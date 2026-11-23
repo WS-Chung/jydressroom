@@ -397,7 +397,7 @@
   }
 
   // ───────── 모자 ─────────
-  const COVER = new Set(["straw", "cap", "beanie", "yellow", "beret", "berrycap", "bucket"]);
+  const COVER = new Set(["straw", "cap", "beanie", "beret", "berrycap", "bucket"]);
   // 캐릭터 머리띠 위 그림의 높이 (세로로 긴 그림은 조금 위로 올려서 앞머리를 덜 가리게)
   const CHARBAND_Y = { melody: 16, kuromi: 18, hachu: 24 };
   function drawHat(it, p) {
@@ -416,9 +416,6 @@
         return `<circle cx="100" cy="16" r="13" fill="${c2}" stroke="${dark(c2, 0.25)}" stroke-width="2"/>` + sh("M 52 76 Q 50 20 100 18 Q 150 20 148 76 Z", f, L)
           + `<path d="M 76 26 Q 72 44 72 62 M 100 20 L 100 58 M 124 26 Q 128 44 128 62" stroke="${L}" stroke-width="1.2" fill="none" opacity=".6"/>`
           + sh("M 49 62 Q 100 52 151 62 L 151 80 Q 100 70 49 80 Z", dark(c, 0.1), L);
-      case "yellow":
-        return sh("M 60 62 Q 58 22 100 22 Q 142 22 140 62 Z", c, L) + `<path d="M 60 55 Q 100 49 140 55" stroke="${dark(c, 0.2)}" stroke-width="3" fill="none"/>`
-          + sh("M 44 68 Q 100 50 156 68 Q 160 78 148 80 Q 100 66 52 80 Q 40 78 44 68 Z", c, L);
       case "bucket":
         return sh("M 62 58 Q 62 22 100 22 Q 138 22 138 58 Z", c, L) + sh("M 61 54 Q 100 48 139 54 L 158 80 Q 100 68 42 80 Z", c, L)
           + `<path d="M 54 70 Q 100 62 146 70" stroke="${L}" stroke-width="1" stroke-dasharray="3 2" fill="none"/>`;
@@ -663,16 +660,16 @@
     return [87, 113].map((cx) => sh(shoe(cx, 404, 424, 13.5), color, dark(color)) + `<ellipse cx="${cx - 5}" cy="417" rx="3.4" ry="1.6" fill="#fff" opacity=".4"/>`).join("");
   }
   function suit() {
-    const N = "#2c3e66", NL = dark(N), arms = [A.armL, A.armR];
+    const N = "#c9ced6", NL = dark(N, 0.45), arms = [A.armL, A.armR]; // 옅은 회색 양복
     return `<path d="M 66 236 L 134 236 L 134 262 L 126 410 L 103 410 L 100 262 L 97 410 L 74 410 L 66 262 Z" fill="${N}" stroke="${NL}" stroke-width="2" stroke-linejoin="round"/>`
       + adultShoes("#2b2b2b")
       + arms.map((d) => `<path d="${d}" pathLength="100" stroke-dasharray="94 300" stroke="${NL}" stroke-width="28" fill="none"/><path d="${d}" pathLength="100" stroke-dasharray="92 300" stroke="${N}" stroke-width="24" fill="none"/>`).join("")
       + sh(A.torso, "#ffffff", "#cfc7cc")
       + sh("M 62 124 L 88 118 L 100 170 L 112 118 L 138 124 L 144 140 L 140 264 Q 100 272 60 264 L 56 140 Z", N, NL)
-      + sh("M 88 118 L 100 170 L 82 146 L 78 126 Z", "#3d5285", NL) + sh(mirror("M 88 118 L 100 170 L 82 146 L 78 126 Z"), "#3d5285", NL)
-      + sh("M 95 121 L 105 121 L 103 129 L 107 160 L 100 169 L 93 160 L 97 129 Z", "#e53935", "#b71c1c")
-      + `<path d="M 100 170 L 100 266" stroke="${NL}" stroke-width="1.6"/><circle cx="104" cy="192" r="2.4" fill="#cfd8dc"/><circle cx="104" cy="214" r="2.4" fill="#cfd8dc"/>`
-      + `<path d="M 118 148 L 130 148 L 127 142 L 122 145 Z" fill="#fff"/>`;
+      + sh("M 88 118 L 100 170 L 82 146 L 78 126 Z", "#aeb5c0", NL) + sh(mirror("M 88 118 L 100 170 L 82 146 L 78 126 Z"), "#aeb5c0", NL)
+      + sh("M 95 121 L 105 121 L 103 129 L 107 160 L 100 169 L 93 160 L 97 129 Z", "#1f2f5c", "#101b3d")
+      + `<path d="M 100 170 L 100 266" stroke="${NL}" stroke-width="1.6"/><circle cx="104" cy="192" r="2.4" fill="#8a93a1"/><circle cx="104" cy="214" r="2.4" fill="#8a93a1"/>`
+      + `<path d="M 118 148 L 130 148 L 127 142 L 122 145 Z" fill="#fff" stroke="#8a93a1" stroke-width="1"/>`;
   }
   function momDress(p) {
     const it = { color: "#9fd3f7", pattern: "flowers", pc: "#ffffff" };

@@ -92,16 +92,16 @@ try {
   check("이야기 끝 → 백화점", (await hash()) === "#/shop");
   check("백화점: 처음 딸기 100개", (await berries()) === 100);
 
-  // 칸마다 옷 개수 (12~20개), 선물 3개, 캐릭터 옷 15딸기 · 보통 옷 5딸기
+  // 칸마다 옷 15개, 선물 3개, 캐릭터 옷 20딸기 · 보통 옷·선물 10딸기
   const counts = {};
   for (const tab of ["dress", "top", "bottom", "shoes", "hat", "gift"]) {
     await click(`.tab[data-tab="${tab}"]`, 300);
     counts[tab] = await evaluate(`[...document.querySelectorAll('#grid .item-card')].map((c) => ({ char: c.classList.contains('char'), price: c.querySelector('.price').textContent }))`);
   }
-  const clothesOk = ["dress", "top", "bottom", "shoes", "hat"].every((t) => counts[t].length >= 12 && counts[t].length <= 20);
-  check("백화점: 칸마다 옷 12~20개, 선물 3개", clothesOk && counts.gift.length === 3, Object.entries(counts).map(([k, v]) => `${k} ${v.length}`).join(", "));
+  const clothesOk = ["dress", "top", "bottom", "shoes", "hat"].every((t) => counts[t].length === 15);
+  check("백화점: 칸마다 옷 15개, 선물 3개", clothesOk && counts.gift.length === 3, Object.entries(counts).map(([k, v]) => `${k} ${v.length}`).join(", "));
   const allCards = Object.values(counts).flat();
-  check("백화점: 캐릭터 옷은 🍓15, 보통 옷·선물은 🍓5", allCards.every((c) => c.price === (c.char ? "🍓15" : "🍓5")));
+  check("백화점: 캐릭터 옷은 🍓20, 보통 옷·선물은 🍓10", allCards.every((c) => c.price === (c.char ? "🍓20" : "🍓10")));
   await click(`.tab[data-tab="dress"]`, 300);
 
   // 진짜 캐릭터 그림(PNG)을 넣었을 때: 그려 둔 칸·거울의 캐릭터 무늬 자리가 그 그림으로 바뀌는지 (시험용 그림으로 흉내)
@@ -133,13 +133,19 @@ try {
   const tabs = await evaluate(`(() => { const t = [...document.querySelectorAll('.tab')]; const g = document.querySelector('.tab-gift'); const d = document.querySelector('.tab-dress');
     const div = document.querySelector('.shelf-divider').getBoundingClientRect(); const grid = document.querySelector('#grid').getBoundingClientRect();
     return { h: Math.min(...t.map((x) => Math.round(x.getBoundingClientRect().height))), giftAnim: getComputedStyle(g).animationName, giftEmoji: getComputedStyle(g.querySelector('.tab-emoji')).animationName,
-      giftBg: getComputedStyle(g).backgroundImage.includes('255, 246, 214'), plainAnim: getComputedStyle(document.querySelector('.tab-top')).animationName,
+      giftBg: getComputedStyle(g).backgroundImage.includes('255, 246, 214'), ribbons: (getComputedStyle(g).backgroundImage.match(/linear-gradient\\(/g) || []).length,
+      shine: getComputedStyle(g, '::before').animationName, sparks: [...g.querySelectorAll('.twinkle')].map((x) => getComputedStyle(x).animationName),
+      plainAnim: getComputedStyle(document.querySelector('.tab-top')).animationName, plainBefore: getComputedStyle(document.querySelector('.tab-top'), '::before').content,
       divider: div.height > 0 && div.bottom <= grid.top + 1 && div.top >= t[0].getBoundingClientRect().bottom }; })()`);
   check("탭: 높이 112px · 탭과 옷 그림 사이 꾸밈선 · 선물 탭은 금색 + 반짝 번짐·흔들 (담아요 버튼과 다른 효과)", tabs.h >= 110 && tabs.divider && tabs.giftBg && tabs.giftAnim === "gift-glow"
     && tabs.giftEmoji === "gift-wiggle" && tabs.plainAnim === "none" && tabs.giftAnim !== ci.anim, JSON.stringify(tabs));
+  check("선물 탭: 빨간 리본이 세로·가로 열십자(선물 상자) + 계속 지나가는 광택 + 깜빡이는 ✦ 3개, 다른 탭엔 없음", tabs.ribbons === 3 && tabs.shine === "gift-shine"
+    && tabs.sparks.length === 3 && tabs.sparks.every((a) => a === "twinkle") && tabs.plainBefore === "none", JSON.stringify(tabs));
+  const dad = await evaluate(`(() => { const svg = Doll.giftThumb(GIFTS.find((g) => g.who === 'dad')); return { gray: svg.includes('#c9ced6'), navyTie: svg.includes('#1f2f5c'), noRed: !svg.includes('#e53935'), noNavySuit: !svg.includes('#2c3e66') }; })()`);
+  check("아빠 선물: 옅은 회색 양복 + 진한 남색 넥타이", dad.gray && dad.navyTie && dad.noRed && dad.noNavySuit, JSON.stringify(dad));
   const p0 = await evaluate(`SiteSound.played()`);
   await click("#cart-in", 300);
-  check("바구니에 담기: 쓸 수 있는 딸기 95개, 바구니 1개, 🧺 표시, 퐁 소리", (await berries()) === 95 && (await bagN()) === 1
+  check("바구니에 담기: 쓸 수 있는 딸기 90개, 바구니 1개, 🧺 표시, 퐁 소리", (await berries()) === 90 && (await bagN()) === 1
     && (await evaluate(`!!document.querySelector('#grid .item-card.in-cart .stamp.cart')`)) && (await evaluate(`SiteSound.played()`)) === p0 + 1);
   await click("#cart-out", 300);
   check("바구니에서 빼기: 딸기 100개로 돌아오고 바구니 0개", (await berries()) === 100 && (await bagN()) === 0 && (await evaluate(`!!document.querySelector('#cart-in')`)));
@@ -158,7 +164,8 @@ try {
   // 가족 선물 3개 담기 → 계산해요 → 바구니 보기 → 하나 빼기 → 이걸로 살래요 → 정말 살까요? → 네 → 칭찬 + 30개
   await click(`.tab[data-tab="gift"]`, 300);
   for (let k = 0; k < 3; k++) { await click(`#grid .item-card:nth-child(${k + 1})`, 250); await click("#cart-in", 250); }
-  check("가족 선물 3개 담기 (딸기 5개씩) → 쓸 수 있는 딸기 80개, 바구니 4개", (await berries()) === 80 && (await bagN()) === 4, String(await berries()));
+  check("가족 선물 3개 담기 (딸기 10개씩) → 쓸 수 있는 딸기 60개, 바구니 4개", (await berries()) === 60 && (await bagN()) === 4, String(await berries()));
+  await shot("flow_gift_tab");
   check("선물을 고르면 거울에 가족이 입은 모습", await evaluate(`!!document.querySelector('#mirror .mirror-tag')`));
   // 2) 🧺 바구니 보기 버튼: 칸 구분 없이 담은 옷(원피스 1 + 선물 3)이 모두 한 창에
   await click("#bag", 400);
@@ -171,41 +178,64 @@ try {
   await shot("flow_cart_sheet");
   await click(".cart-box .cart-row:first-child .cart-out", 300);
   const sheet2 = await evaluate(`({ rows: document.querySelectorAll('.cart-box .cart-row').length, sum: document.querySelector('.cart-box .cart-sum')?.textContent })`);
-  check("계산해요 → 바구니 보기 4개 · 모두 🍓20 → ✕ 빼요 하면 3개 · 🍓15", sheet.rows === 4 && sheet.sum.includes("🍓20") && sheet2.rows === 3 && sheet2.sum.includes("🍓15") && (await berries()) === 85,
+  check("계산해요 → 바구니 보기 4개 · 모두 🍓40 → ✕ 빼요 하면 3개 · 🍓30", sheet.rows === 4 && sheet.sum.includes("🍓40") && sheet2.rows === 3 && sheet2.sum.includes("🍓30") && (await berries()) === 70,
     JSON.stringify([sheet, sheet2]));
   const buyLabel = await evaluate(`document.querySelector('.cart-box [data-act="buy"]').textContent.trim()`);
   await click('.cart-box [data-act="buy"]', 400);
   const ask = await evaluate(`({ title: document.querySelector('.celebrate h2')?.textContent, text: document.querySelector('.celebrate p')?.textContent })`);
-  check("'🍓 다 골랐어요' → '정말 살까요? 딸기 15개를 내요.'", buyLabel === "🍓 다 골랐어요" && ask.title === "정말 살까요?" && ask.text === "딸기 15개를 내요.", JSON.stringify({ buyLabel, ...ask }));
+  check("'🍓 다 골랐어요' → '정말 살까요? 딸기 30개를 내요.'", buyLabel === "🍓 다 골랐어요" && ask.title === "정말 살까요?" && ask.text === "딸기 30개를 내요.", JSON.stringify({ buyLabel, ...ask }));
   await shot("flow_cart_confirm");
   await click(".celebrate .modal-btns button", 900);
   const praise = await evaluate(`({ title: document.querySelector('.celebrate h2')?.textContent, text: document.querySelector('.celebrate p')?.textContent, confetti: document.querySelectorAll('.confetti').length })`);
   check("가족 3명 선물을 사면 → '가족을 사랑하는 착한 어린이' 칭찬 + 딸기 30개 + 폭죽", praise.title?.includes("착한 어린이") && praise.text?.includes("30개") && praise.confetti > 0, JSON.stringify(praise));
   await shot("flow_gift_praise");
   await click(".celebrate .modal-btns button", 400);
-  check("칭찬 후 다시 백화점: 딸기 115개, 바구니 비움, 선물 💝", (await hash()) === "#/shop" && (await berries()) === 115 && (await bagN()) === 0
+  check("칭찬 후 다시 백화점: 딸기 100개, 바구니 비움, 선물 💝", (await hash()) === "#/shop" && (await berries()) === 100 && (await bagN()) === 0
     && (await evaluate(`document.querySelectorAll('#grid .item-card.owned .stamp').length`)) === 3, String(await berries()));
 
-  // 캐릭터 옷 7벌 담기 → 딸기가 모자라면 못 담음 → 계산 → 다 샀어요 → 내 방
-  for (const tab of ["dress", "top", "hat", "shoes", "bottom"]) {
-    await click(`.tab[data-tab="${tab}"]`, 250);
-    for (let k = 0; k < (tab === "dress" || tab === "top" ? 2 : 1); k++) { await click(`#grid .item-card.char:not(.owned):not(.in-cart)`, 200); await click("#cart-in", 200); }
-  }
-  check("캐릭터 옷 7벌 담기 → 쓸 수 있는 딸기 10개", (await berries()) === 10, String(await berries()));
+  // 한 칸(원피스)에서 3개까지만 담기 → 4번째는 "원피스는 이제 더 담을 수 없어요" → 하나 빼면 다시 담을 수 있음 → 다른 칸은 그대로 담음
+  const addFirst = async (sel) => { await click(sel, 200); await click("#cart-in", 200); };
   await click(`.tab[data-tab="dress"]`, 250);
-  await click(`#grid .item-card.char:not(.owned):not(.in-cart)`, 250);
-  check("딸기가 모자라면 '딸기가 모자라요' + '바구니에서 하나 빼 볼까요?'", await evaluate(`!!document.querySelector('.pick-warn') && !!document.querySelector('.pick-hint.small') && !document.querySelector('#cart-in')`));
+  for (let k = 0; k < 3; k++) await addFirst(`#grid .item-card:not(.char):not(.owned):not(.in-cart)`);
+  check("원피스 3개 담기 → 쓸 수 있는 딸기 70개", (await berries()) === 70 && (await bagN()) === 3, String(await berries()));
   await click(`#grid .item-card:not(.char):not(.owned):not(.in-cart)`, 250);
+  const full = await evaluate(`({ warn: document.querySelector('.pick-warn')?.textContent.trim(), add: !!document.querySelector('#cart-in'), hint: !!document.querySelector('.pick-hint.small') })`);
+  await shot("flow_cart_full");
+  await click(`#grid .item-card.char:not(.owned):not(.in-cart)`, 250);
+  const full2 = await evaluate(`({ warn: document.querySelector('.pick-warn')?.textContent.trim(), add: !!document.querySelector('#cart-in') })`);
+  check("원피스를 3개 담은 뒤에는 '바구니에 담아요' 대신 '원피스는 이제 더 담을 수 없어요' (보통·캐릭터 옷 모두)", full.warn === "원피스는 이제 더 담을 수 없어요" && !full.add && full.hint
+    && full2.warn === "원피스는 이제 더 담을 수 없어요" && !full2.add && (await berries()) === 70 && (await bagN()) === 3, JSON.stringify({ full, full2 }));
+  await click(`#grid .item-card:not(.char):not(.owned):not(.in-cart)`, 250);
+  await click("#bag", 400);
+  await click(".cart-box .cart-row:first-child .cart-out", 300);
+  await click('.cart-box [data-act="close"]', 300);
+  check("바구니에서 원피스를 하나 빼면 다시 담을 수 있음 (3개까지)", (await evaluate(`!!document.querySelector('#cart-in')`)) && (await bagN()) === 2);
   await click("#cart-in", 250);
+  check("다시 담으면 또 3개 (딸기 70개)", (await bagN()) === 3 && (await berries()) === 70 && (await evaluate(`!document.querySelector('#cart-in')`)));
+  await click(`.tab[data-tab="bottom"]`, 250);
+  await click(`#grid .item-card:not(.char):not(.owned):not(.in-cart)`, 250);
+  check("다른 칸(바지·치마)은 그대로 담을 수 있음", await evaluate(`!!document.querySelector('#cart-in')`));
+  await click(`.tab[data-tab="top"]`, 250);
+  await click(`#grid .item-card.char:not(.owned):not(.in-cart)`, 250);
+  const topOk = await evaluate(`!!document.querySelector('#cart-in')`);
+  await click("#cart-in", 200);
+  await click(`#grid .item-card.char:not(.owned):not(.in-cart)`, 250);
+  await click("#cart-in", 200);
+  await click(`.tab[data-tab="hat"]`, 250);
+  await addFirst(`#grid .item-card.char:not(.owned):not(.in-cart)`);
+  check("원피스 3 + 캐릭터 윗옷 2 + 캐릭터 모자 1 담기 → 쓸 수 있는 딸기 10개", topOk && (await berries()) === 10 && (await bagN()) === 6, String(await berries()));
+  await click(`.tab[data-tab="shoes"]`, 250);
+  await click(`#grid .item-card.char:not(.owned):not(.in-cart)`, 250);
+  check("딸기가 모자라면 '딸기가 모자라요' + '바구니에서 하나 빼 볼까요?'", await evaluate(`!!document.querySelector('.pick-warn') && document.querySelector('.pick-warn').textContent.includes('딸기가 모자라요') && !!document.querySelector('.pick-hint.small') && !document.querySelector('#cart-in')`));
   await click(`.tab[data-tab="gift"]`, 250);
   await click(`#grid .item-card`, 250);
   check("선물한 물건은 다시 못 담음 (💝 선물했어요)", await evaluate(`!document.querySelector('#cart-in') && document.querySelector('#pick').textContent.includes('선물했어요')`));
   await click("#done", 400);
-  const rows8 = await evaluate(`document.querySelectorAll('.cart-box .cart-row').length`);
+  const rows6 = await evaluate(`document.querySelectorAll('.cart-box .cart-row').length`);
   await click('.cart-box [data-act="buy"]', 400);
   await click(".celebrate .modal-btns button", 600);
   const done = await evaluate(`({ title: document.querySelector('.celebrate h2')?.textContent, btns: [...document.querySelectorAll('.celebrate .modal-btns button')].map((b) => b.textContent.trim()) })`);
-  check("8벌 계산 → '다 샀어요!' + 내 방에 가요 / 더 살래요", rows8 === 8 && done.title === "다 샀어요!" && done.btns.length === 2 && done.btns[0].includes("내 방"), JSON.stringify({ rows8, ...done }));
+  check("6벌 계산 → '다 샀어요!' + 내 방에 가요 / 더 살래요", rows6 === 6 && done.title === "다 샀어요!" && done.btns.length === 2 && done.btns[0].includes("내 방"), JSON.stringify({ rows6, ...done }));
   await click(".celebrate .modal-btns button", 700);
   check("내 방에 가요 → 내 방", (await hash()) === "#/room");
 
@@ -276,7 +306,7 @@ try {
       await go(hs, name === "party" ? 1300 : 900);
       if (name === "story") { await evaluate(`document.querySelectorAll('.dot')[5].click(); true`); await sleep(200); }
       if (name === "shop") {
-        // 바구니 보기 창이 화면 안에 들어오는지 (처음 크기에서 남은 딸기 5개로 한 벌 담아 둠)
+        // 바구니 보기 창이 화면 안에 들어오는지 (처음 크기에서 남은 딸기 10개로 한 벌 담아 둠)
         await click(".tab[data-tab='dress']", 200);
         if (await click("#grid .item-card:not(.owned):not(.in-cart):not(.char)", 200)) await click("#cart-in", 200);
         await click("#done", 400);
@@ -328,6 +358,15 @@ try {
     }
     check(`${w}x${h} 모든 화면: 가로 넘침 없음`, over.length === 0, over.join(", "));
   }
+
+  // 옷 목록에서 없어진 옷(예: 민트 줄무늬 원피스 d-mint, 노란 모자 h-yellow)이 옛 기록의 바구니·입은 옷에 남아 있어도 오류 없이 열리는지
+  await send("Emulation.setDeviceMetricsOverride", { width: 1366, height: 900, deviceScaleFactor: 1, mobile: false });
+  await evaluate(`(() => { const g = JSON.parse(localStorage.getItem('berryland-now')); g.cart = ['d-mint', 'd-denim']; g.outfit.dress = 'd-mint'; g.mirror.hat = 'h-yellow'; localStorage.setItem('berryland-now', JSON.stringify(g)); return true; })()`);
+  await send("Page.navigate", { url: "about:blank" });
+  await sleep(300);
+  await go("#/shop", 1000);
+  const stale = await evaluate(`({ bag: +document.querySelector('#bag b').textContent, berries: +document.querySelector('#berries').textContent, doll: !!document.querySelector('#mirror svg') })`);
+  check("없어진 옷이 옛 기록에 남아 있어도 백화점이 열림 (바구니에서 빠짐)", stale.bag === 1 && stale.berries === 0 && stale.doll, JSON.stringify(stale));
 
   // ───────── 3) 디자인 견본 화면의 부품과 조작 (노트북 크기) ─────────
   await send("Emulation.setDeviceMetricsOverride", { width: 1366, height: 900, deviceScaleFactor: 1, mobile: false });

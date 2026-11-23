@@ -441,19 +441,35 @@ body[data-view="shop"] main, body[data-view="room"] main { padding-bottom: 14px;
 .tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.15); }
 .tab-emoji { font-size: 40px; line-height: 1; }
 .tab-label { white-space: nowrap; }
-/* 선물 탭: 금색 선물 상자 + 빨간 리본 + 🎀. 효과는 금빛이 은은하게 번지고(gift-glow) 🎁가 가끔 흔들흔들(gift-wiggle)
+/* 선물 탭: 금색 선물 상자 + 빨간 리본(세로·가로로 열십자) + 🎀. 효과는 금빛이 은은하게 번지고(gift-glow),
+   광택이 계속 지나가고(gift-shine), ✦가 깜빡이고(twinkle), 🎁가 가끔 흔들흔들(gift-wiggle)
    ('바구니에 담아요'의 커졌다 작아지기·반짝이와는 다른 움직임) */
 .tab.tab-gift {
+  --ribbon: rgba(229, 57, 53, 0.34);
   background:
-    linear-gradient(90deg, transparent calc(50% - 6px), rgba(229, 57, 53, 0.3) calc(50% - 6px) calc(50% + 6px), transparent calc(50% + 6px)),
+    linear-gradient(90deg, transparent calc(50% - 6px), var(--ribbon) calc(50% - 6px) calc(50% + 6px), transparent calc(50% + 6px)),
+    linear-gradient(180deg, transparent calc(50% - 6px), var(--ribbon) calc(50% - 6px) calc(50% + 6px), transparent calc(50% + 6px)),
     linear-gradient(180deg, #fff6d6, #ffe08a);
   color: #7a4b00; animation: gift-glow 2.4s ease-in-out infinite;
 }
 .tab.tab-gift::after { content: "🎀"; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); font-size: 24px; line-height: 1; pointer-events: none; }
+/* 반짝이는 광택: 탭 위를 비스듬한 흰 빛이 계속 훑고 지나가요 (탭 모서리 안에서만) */
+.tab.tab-gift::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.85) 50%, transparent 62%) no-repeat;
+  background-size: 260% 100%; background-position: -8% 0;
+  animation: gift-shine 2.6s ease-in-out infinite;
+}
 .tab.tab-gift .tab-emoji { animation: gift-wiggle 2.4s ease-in-out infinite; }
+.tab.tab-gift .twinkle { color: #fff; font-size: 18px; line-height: 1; text-shadow: 0 0 3px #ffb300, 0 0 8px #ffb300; }
+.tab.tab-gift .twinkle.s1 { left: 9%; top: 12%; }
+.tab.tab-gift .twinkle.s2 { right: 9%; top: 30%; font-size: 14px; animation-delay: -0.6s; }
+.tab.tab-gift .twinkle.s3 { left: 16%; bottom: 14%; font-size: 15px; animation-delay: -1.1s; }
 .tab.tab-gift[aria-selected="true"] {
+  --ribbon: rgba(229, 57, 53, 0.5);
   background:
-    linear-gradient(90deg, transparent calc(50% - 6px), rgba(229, 57, 53, 0.45) calc(50% - 6px) calc(50% + 6px), transparent calc(50% + 6px)),
+    linear-gradient(90deg, transparent calc(50% - 6px), var(--ribbon) calc(50% - 6px) calc(50% + 6px), transparent calc(50% + 6px)),
+    linear-gradient(180deg, transparent calc(50% - 6px), var(--ribbon) calc(50% - 6px) calc(50% + 6px), transparent calc(50% + 6px)),
     linear-gradient(180deg, #ffd54f, #ffb300);
   color: #4e2f00;
 }
@@ -461,6 +477,7 @@ body[data-view="shop"] main, body[data-view="room"] main { padding-bottom: 14px;
   0%, 100% { box-shadow: inset 0 0 0 3px #ffd54f, inset 0 -5px 0 rgba(160, 100, 0, 0.18), 0 0 0 0 rgba(255, 193, 7, 0); }
   50% { box-shadow: inset 0 0 0 3px #ffca28, inset 0 -5px 0 rgba(160, 100, 0, 0.18), 0 0 16px 5px rgba(255, 193, 7, 0.6); }
 }
+@keyframes gift-shine { 0%, 30% { background-position: -8% 0; } 100% { background-position: 108% 0; } }
 @keyframes gift-wiggle { 0%, 55%, 100% { transform: none; } 65% { transform: rotate(-14deg) scale(1.12); } 75% { transform: rotate(12deg) scale(1.12); } 85% { transform: rotate(-6deg); } }
 /* 탭과 옷 그림 사이 꾸밈선: 분홍 땡땡이 줄 + 아래로 늘어진 레이스 + 가운데 🍓🎀🍓 */
 .shelf-divider { position: relative; flex: none; height: 26px; margin: 8px 6px 0; }

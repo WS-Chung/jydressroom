@@ -21,7 +21,8 @@
 */
 window.SHOP = {
   start: 100,                                   // 처음에 받는 딸기
-  price: { normal: 5, character: 15, gift: 5 }, // 보통 옷 · 캐릭터 옷 · 가족 선물
+  price: { normal: 10, character: 20, gift: 10 }, // 보통 옷 · 캐릭터 옷 · 가족 선물
+  maxPerCat: 3,                                 // 바구니에 한 칸(원피스·윗옷 …)에서 담을 수 있는 옷 수
   giftThanks: 10,                               // 가족 선물 하나마다 고맙다고 받는 딸기
   allGiftsBonus: 0,                             // 세 사람 모두 선물했을 때 더 주는 딸기 (0이면 10 × 3 = 30개)
 };
@@ -51,9 +52,7 @@ window.ITEMS = [
   { id: "d-sailor", cat: "dress", name: "하늘색 세일러 원피스", tone: "하늘", shape: "aline", sleeve: "short", collar: "sailor", color: "#a7d8f7", color2: "#283593" },
   { id: "d-check", cat: "dress", name: "빨간 체크 원피스", tone: "빨강", shape: "pinafore", color: "#ffffff", pattern: "gingham", pc: "#e53935", color2: "#e53935" },
   { id: "d-princess", cat: "dress", name: "보라 공주 드레스", tone: "보라", shape: "princess", sleeve: "puff", color: "#cfa8e0", pattern: "sparkle", pc: "#ffffff", color2: "#8e24aa" },
-  { id: "d-mint", cat: "dress", name: "민트 줄무늬 원피스", tone: "초록", shape: "aline", sleeve: "none", color: "#8fe3c8", pattern: "stripes", pc: "#ffffff" },
   { id: "d-berry", cat: "dress", name: "딸기 원피스", tone: "빨강", shape: "aline", sleeve: "puff", collar: "round", color: "#fff4f4", pattern: "berries", color2: "#e53935" },
-  { id: "d-tutu", cat: "dress", name: "발레 튜튜 원피스", tone: "분홍", shape: "tutu", sleeve: "none", color: "#ffc9de" },
   { id: "d-denim", cat: "dress", name: "청 멜빵 원피스", tone: "파랑", shape: "pinafore", color: "#5b8fd6", pattern: "denim", pc: "#ffffff", motif: "heart" },
   { id: "d-star", cat: "dress", name: "별빛 긴 드레스", tone: "남색", shape: "long", sleeve: "short", color: "#3f51b5", pattern: "stars", pc: "#ffe082" },
   { id: "d-rainbow", cat: "dress", name: "무지개 원피스", tone: "무지개", shape: "aline", sleeve: "short", color: "#ffffff", pattern: "rainbow" },
@@ -65,11 +64,9 @@ window.ITEMS = [
   { id: "d-hachu2", cat: "dress", name: "하츄핑 튜튜 원피스", tone: "분홍", shape: "tutu", sleeve: "puff", color: "#ffb3d9", color2: "#ff5fa8", motif: "hachu", char: "hachu" },
 
   // ── 윗옷 ──
-  { id: "t-heart", cat: "top", name: "하얀 하트 티셔츠", tone: "하양", shape: "tee", color: "#ffffff", motif: "heart" },
   { id: "t-stripe", cat: "top", name: "분홍 줄무늬 티셔츠", tone: "분홍", shape: "tee", color: "#f8a5c2", pattern: "stripes", pc: "#ffffff" },
   { id: "t-chick", cat: "top", name: "노란 병아리 티셔츠", tone: "노랑", shape: "tee", color: "#fff3b0", motif: "chick" },
   { id: "t-blouse", cat: "top", name: "하늘색 블라우스", tone: "하늘", shape: "blouse", color: "#bfe3fb" },
-  { id: "t-hoodie", cat: "top", name: "초록 후드티", tone: "초록", shape: "hoodie", color: "#81c784" },
   { id: "t-berry", cat: "top", name: "빨간 딸기 티셔츠", tone: "빨강", shape: "tee", color: "#ff8a80", motif: "berry" },
   { id: "t-cardigan", cat: "top", name: "보라 가디건", tone: "보라", shape: "cardigan", color: "#b39ddb" },
   { id: "t-jacket", cat: "top", name: "청자켓", tone: "파랑", shape: "jacket", color: "#6f9fd8", pattern: "denim", pc: "#ffffff" },
@@ -78,7 +75,6 @@ window.ITEMS = [
   { id: "t-bear", cat: "top", name: "곰돌이 맨투맨", tone: "갈색", shape: "sweat", color: "#f1dcc0", motif: "bear" },
   { id: "t-shirt", cat: "top", name: "주황 체크 셔츠", tone: "주황", shape: "shirt", color: "#ffffff", pattern: "gingham", pc: "#fb8c00" },
   { id: "t-padding", cat: "top", name: "분홍 패딩", tone: "분홍", shape: "padding", color: "#f48fb1", pattern: "quilt", pc: "#d76a93" },
-  { id: "t-star", cat: "top", name: "남색 별 티셔츠", tone: "남색", shape: "longtee", color: "#3949ab", motif: "star" },
   { id: "t-melody", cat: "top", name: "마이멜로디 티셔츠", tone: "분홍", shape: "tee", color: "#ffd6e8", motif: "melody", char: "melody" },
   { id: "t-melody2", cat: "top", name: "마이멜로디 가디건", tone: "분홍", shape: "cardigan", color: "#ffbcd8", motif: "melody", char: "melody" },
   { id: "t-kuromi", cat: "top", name: "쿠로미 후드티", tone: "검정", shape: "hoodie", color: "#3a3347", color2: "#f7a1c4", motif: "kuromi", char: "kuromi" },
@@ -89,7 +85,6 @@ window.ITEMS = [
   { id: "b-jeans", cat: "bottom", name: "청바지", tone: "파랑", shape: "jeans", color: "#5b8fd6", pattern: "denim", pc: "#ffffff" },
   { id: "b-shorts", cat: "bottom", name: "노란 반바지", tone: "노랑", shape: "shorts", color: "#ffe082" },
   { id: "b-check", cat: "bottom", name: "빨간 체크 치마", tone: "빨강", shape: "skirt", color: "#ffffff", pattern: "gingham", pc: "#e53935" },
-  { id: "b-tutu", cat: "bottom", name: "하얀 튜튜 치마", tone: "하양", shape: "tutu", color: "#fbf3ff" },
   { id: "b-leggings", cat: "bottom", name: "하늘색 별 레깅스", tone: "하늘", shape: "leggings", color: "#9fd3f7", pattern: "stars", pc: "#ffffff" },
   { id: "b-long", cat: "bottom", name: "꽃무늬 긴 치마", tone: "노랑", shape: "longskirt", color: "#fff0d6", pattern: "flowers", pc: "#ff8a65" },
   { id: "b-green", cat: "bottom", name: "초록 바지", tone: "초록", shape: "pants", color: "#81c784" },
@@ -103,7 +98,6 @@ window.ITEMS = [
   { id: "b-hachu", cat: "bottom", name: "하츄핑 튜튜 치마", tone: "분홍", shape: "tutu", color: "#ff9ccc", motif: "hachu", char: "hachu" },
 
   // ── 신발 ──
-  { id: "s-pink", cat: "shoes", name: "분홍 운동화", tone: "분홍", shape: "sneaker", color: "#f48fb1" },
   { id: "s-light", cat: "shoes", name: "반짝 불빛 운동화", tone: "무지개", shape: "lightup", color: "#ffffff" },
   { id: "s-red", cat: "shoes", name: "빨간 구두", tone: "빨강", shape: "maryjane", color: "#e53935" },
   { id: "s-black", cat: "shoes", name: "까만 구두", tone: "검정", shape: "maryjane", color: "#3a3347" },
@@ -111,7 +105,6 @@ window.ITEMS = [
   { id: "s-sandal", cat: "shoes", name: "하늘색 샌들", tone: "하늘", shape: "sandals", color: "#64b5f6" },
   { id: "s-glass", cat: "shoes", name: "반짝 공주 구두", tone: "하늘", shape: "glass", color: "#d7ecff" },
   { id: "s-fur", cat: "shoes", name: "하얀 털부츠", tone: "하양", shape: "furboots", color: "#c9a27e", color2: "#fffaf2" },
-  { id: "s-purple", cat: "shoes", name: "보라 운동화", tone: "보라", shape: "sneaker", color: "#9575cd" },
   { id: "s-frog", cat: "shoes", name: "개구리 장화", tone: "초록", shape: "rainboots", color: "#66bb6a", motif: "frog" },
   { id: "s-bow", cat: "shoes", name: "리본 구두", tone: "분홍", shape: "maryjane", color: "#ffc1dc", motif: "bow" },
   { id: "s-ballet", cat: "shoes", name: "발레 신발", tone: "분홍", shape: "ballet", color: "#ffd6e7" },
@@ -125,7 +118,6 @@ window.ITEMS = [
   { id: "h-straw", cat: "hat", name: "밀짚모자", tone: "노랑", shape: "straw", color: "#f3d38b", color2: "#ff8fab" },
   { id: "h-cap", cat: "hat", name: "분홍 야구 모자", tone: "분홍", shape: "cap", color: "#f48fb1" },
   { id: "h-beanie", cat: "hat", name: "하늘색 털모자", tone: "하늘", shape: "beanie", color: "#9fd3f7", color2: "#ffffff" },
-  { id: "h-yellow", cat: "hat", name: "노란 모자", tone: "노랑", shape: "yellow", color: "#fdd835" },
   { id: "h-crown", cat: "hat", name: "공주 왕관", tone: "노랑", shape: "crown", color: "#ffd54f" },
   { id: "h-bunny", cat: "hat", name: "토끼 머리띠", tone: "하양", shape: "bunny", color: "#ffffff", color2: "#ffc1dc" },
   { id: "h-bow", cat: "hat", name: "분홍 큰 리본", tone: "분홍", shape: "bow", color: "#f48fb1" },
@@ -147,7 +139,7 @@ window.BASE = [
 ];
 
 window.GIFTS = [
-  { id: "g-dad", cat: "gift", who: "dad", name: "아빠 선물", sub: "멋진 양복", tone: "남색" },
+  { id: "g-dad", cat: "gift", who: "dad", name: "아빠 선물", sub: "회색 양복", tone: "회색" },
   { id: "g-mom", cat: "gift", who: "mom", name: "엄마 선물", sub: "꽃무늬 원피스", tone: "하늘" },
   { id: "g-twin", cat: "gift", who: "twin", name: "정우 선물", sub: "로봇 점퍼", tone: "파랑" },
 ];

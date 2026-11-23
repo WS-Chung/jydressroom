@@ -53,6 +53,7 @@
   const callName = (n) => (batchim(n) ? n + "이" : n);
   const vocative = (n) => n + (batchim(n) ? "아" : "야");
   const subj = (n) => n + (batchim(n) ? "이" : "가");
+  const topic = (w) => w + (batchim(w) ? "은" : "는");
   const KID = SITE.child;
   const famName = (who) => (SITE.family[who] || {}).name || who;
   const famEmoji = (who) => (SITE.family[who] || {}).emoji || "🎁";
@@ -293,6 +294,13 @@
   const baseLook = () => ({ dress: "base-dress", top: null, bottom: null, shoes: "base-shoes", hat: null });
   let G = store.get(KEY, null);
   if (!G || G.v !== 1) G = null;
+  if (G) {
+    // 옷 목록에서 없어진 옷(옛 기록)은 바구니와 입은 옷에서 빼요
+    G.cart = (G.cart || []).filter((id) => ITEM[id]);
+    for (const look of [G.mirror, G.outfit]) {
+      for (const cat of Object.keys(baseLook())) if (look && look[cat] && !ITEM[look[cat]]) look[cat] = baseLook()[cat];
+    }
+  }
 
   const reached = (s) => !!G && STAGES.indexOf(G.stage) >= STAGES.indexOf(s);
   const advance = (s) => { if (G && !reached(s)) G.stage = s; };
@@ -487,7 +495,7 @@
 
   // ───────── 가게·옷장 공통 ─────────
   // 옷 칸 위 큰 탭 + 아래 꾸밈선 (레이스 + 🎀). 선물 탭(tab-gift)은 선물 상자처럼 금색 + 리본
-  const tabsHtml = (tabs, cur) => `<div class="tabs" role="tablist" style="--tabs:${tabs.length}">${tabs.map((t) => `<button class="tab tab-${t.id}" role="tab" data-tab="${t.id}" aria-selected="${t.id === cur}"><span class="tab-emoji" aria-hidden="true">${t.emoji}</span><span class="tab-label">${t.label.replace("·", "·<wbr>")}</span></button>`).join("")}</div>
+  const tabsHtml = (tabs, cur) => `<div class="tabs" role="tablist" style="--tabs:${tabs.length}">${tabs.map((t) => `<button class="tab tab-${t.id}" role="tab" data-tab="${t.id}" aria-selected="${t.id === cur}"><span class="tab-emoji" aria-hidden="true">${t.emoji}</span><span class="tab-label">${t.label.replace("·", "·<wbr>")}</span>${t.id === "gift" ? `<span class="twinkle s1" aria-hidden="true">✦</span><span class="twinkle s2" aria-hidden="true">✦</span><span class="twinkle s3" aria-hidden="true">✦</span>` : ""}</button>`).join("")}</div>
     <div class="shelf-divider" aria-hidden="true"><span>🍓 🎀 🍓</span></div>`;
   function bindTabs(onPick) {
     app.querySelectorAll(".tab").forEach((b) => b.addEventListener("click", () => {
@@ -513,6 +521,9 @@
     // 지갑 숫자는 '지금 쓸 수 있는 딸기' = 가진 딸기 - 바구니에 담은 옷값 (담으면 줄고, 빼면 다시 늘어요)
     const cartTotal = () => G.cart.reduce((a, id) => a + priceOf(ITEM[id]), 0);
     const free = () => G.berries - cartTotal();
+    // 한 칸(원피스·윗옷 …)에서는 SHOP.maxPerCat개까지만 담아요 (선물은 세 개뿐이라 상관없어요)
+    const inCartOf = (cat) => G.cart.filter((id) => ITEM[id].cat === cat).length;
+    const catFull = (it) => it.cat !== "gift" && inCartOf(it.cat) >= SHOP.maxPerCat;
     app.innerHTML = `
       <section class="studio shop" style="${theme("pink")}">
         <div class="stage fitting">
@@ -567,7 +578,10 @@
       if (G.gifted.includes(it.id)) act = `<span class="chip hot">💝 선물했어요</span>`;
       else if (G.owned.includes(it.id)) act = `<span class="chip">✔ 샀어요</span>`;
       else if (G.cart.includes(it.id)) act = `<span class="chip hot">🧺 바구니에 담았어요</span><button class="small-btn" id="cart-out" data-quiet>✕ 빼요</button>`;
-      else if (free() >= p) {
+      else if (catFull(it)) {
+        const label = CATS.find((c) => c.id === it.cat).label;
+        act = `<p class="pick-warn">${topic(label)} 이제 더 담을 수 없어요</p><p class="pick-hint small">다른 칸에서 골라 봐요</p>`;
+      } else if (free() >= p) {
         act = `<div class="cart-in-wrap"><button class="cart-in-btn" id="cart-in" data-quiet aria-label="${esc(labelOf(it))}, 딸기 ${p}개, 바구니에 담아요">
             <span class="ci-emoji" aria-hidden="true">🧺</span><span class="ci-text">바구니에 담아요</span></button>
           <span class="twinkle t1" aria-hidden="true">✨</span><span class="twinkle t2" aria-hidden="true">✨</span><span class="twinkle t3" aria-hidden="true">✨</span><span class="twinkle t4" aria-hidden="true">✨</span></div>`;
@@ -586,7 +600,7 @@
     const cartIn = (it) => {
       const p = priceOf(it);
       if (G.cart.includes(it.id) || G.owned.includes(it.id)) return;
-      if (free() < p) { Sound.boop(); return; }
+      if (catFull(it) || free() < p) { Sound.boop(); return; }
       G.cart.push(it.id);
       note("cart-in", { id: it.id, price: p, round: G.round });
       save();
