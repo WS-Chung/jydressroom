@@ -1,0 +1,12 @@
+# 검사 도구가 만드는 화면 캡처 (지워도 되는 임시 폴더)
+tools/work/
+
+# 운영체제가 만드는 파일
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# 편집기·배포 도구 설정
+.vscode/
+.vercel/
+.claude/settings.local.json

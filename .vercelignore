@@ -1,0 +1,7 @@
+# 웹사이트로 공개하지 않을 파일
+docs/
+tools/
+.claude/
+*.md
+.gitignore
+.gitattributes

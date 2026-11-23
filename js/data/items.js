@@ -38,7 +38,6 @@ window.CHARACTERS = { melody: "마이멜로디", kuromi: "쿠로미", hachu: "�
 
 // 진짜 캐릭터 그림 (선택). images/characters/ 폴더에 배경이 투명한 PNG를 이 이름으로 넣으면
 // 캐릭터 옷의 무늬가 그 그림으로 바뀌어요. 파일이 없으면 js/doll.js가 그린 흉내 그림을 써요.
-// 이 폴더의 그림 파일은 git·Vercel에 올라가지 않아요 (.gitignore · .vercelignore). 집에서 index.html로 열 때만 보여요
 window.CHARACTER_IMAGES = {
   melody: "images/characters/melody.png",
   kuromi: "images/characters/kuromi.png",
