@@ -135,10 +135,12 @@
   const charImg = {};       // 불러온 그림 주소 (이름 → 주소)
   const CHAR_BOX = 44;      // 그림 상자 (무늬 단위 · 가로세로). 온몸 그림이라 흉내 그림(얼굴, 지름 약 26 + 귀)보다 조금 크게
   const charImage = (name) => `<image class="char-img" href="${charImg[name]}" x="${-CHAR_BOX / 2}" y="${-CHAR_BOX / 2 - 4}" width="${CHAR_BOX}" height="${CHAR_BOX}" preserveAspectRatio="xMidYMid meet"/>`;
+  // 캐릭터마다 옷 위의 그림 크기 배율 (없으면 1배). 그림이 크게 느껴지는 캐릭터만 줄여요 (그림 파일·흉내 그림 모두)
+  const CHAR_SCALE = { chiikawa: 0.8 };
   const motif = (name, x, y, s) => {
     if (!MOTIFS[name]) return "";
     const isChar = Object.prototype.hasOwnProperty.call(CHAR_FILES, name);
-    return `<g transform="translate(${x} ${y}) scale(${s})"${isChar ? ` class="char-motif" data-char="${name}"` : ""}>${charImg[name] ? charImage(name) : MOTIFS[name]()}</g>`;
+    return `<g transform="translate(${x} ${y}) scale(${+(s * (CHAR_SCALE[name] ?? 1)).toFixed(3)})"${isChar ? ` class="char-motif" data-char="${name}"` : ""}>${charImg[name] ? charImage(name) : MOTIFS[name]()}</g>`;
   };
   function setCharacterImage(name, src) {
     if (!MOTIFS[name] || !src) return;
@@ -401,7 +403,7 @@
   // ───────── 모자 ─────────
   const COVER = new Set(["straw", "cap", "beanie", "beret", "berrycap"]);
   // 캐릭터 머리띠 위 그림의 높이 (세로로 긴 그림은 조금 위로 올려서 앞머리를 덜 가리게)
-  const CHARBAND_Y = { melody: 16, kuromi: 18, hachu: 24, chiikawa: 20 };
+  const CHARBAND_Y = { melody: 16, kuromi: 18, hachu: 24, chiikawa: 25 };
   function drawHat(it, p) {
     const c = it.color, L = dark(c), c2 = it.color2 || light(c, 0.55), f = p.fill(it);
     // 머리띠 (line: 테두리 색. 까만 머리띠는 분홍 테두리라야 까만 머리 위에서 보여요)

@@ -96,7 +96,7 @@ try {
   const counts = {};
   for (const tab of ["dress", "top", "bottom", "shoes", "hat", "gift"]) {
     await click(`.tab[data-tab="${tab}"]`, 300);
-    counts[tab] = await evaluate(`[...document.querySelectorAll('#grid .item-card')].map((c) => ({ char: c.classList.contains('char'), price: c.querySelector('.price').textContent }))`);
+    counts[tab] = await evaluate(`[...document.querySelectorAll('#grid .item-card')].map((c) => ({ char: c.classList.contains('char'), price: c.querySelector('.price').textContent, label: c.getAttribute('aria-label') }))`);
   }
   const clothesOk = ["dress", "top", "bottom", "shoes", "hat"].every((t) => counts[t].length === 15);
   check("백화점: 칸마다 옷 15개, 선물 3개", clothesOk && counts.gift.length === 3, Object.entries(counts).map(([k, v]) => `${k} ${v.length}`).join(", "));
@@ -106,6 +106,16 @@ try {
   const chii = await evaluate(`ITEMS.filter((i) => i.char === 'chiikawa').map((i) => ({ cat: i.cat, tone: i.tone, white: /^#f[0-9a-f]f[0-9a-f]f[0-9a-f]$/i.test(i.color), shape: i.shape }))`);
   check("먼작귀 햄스터 옷: 칸마다 1개씩 5벌, 흰색 톤, 이름 '먼작귀 햄스터'", chii.map((c) => c.cat).sort().join() === "bottom,dress,hat,shoes,top" && chii.every((c) => c.tone === "하양" && c.white)
     && (await evaluate(`CHARACTERS.chiikawa`)) === "먼작귀 햄스터" && (await evaluate(`ITEMS.filter((i) => i.char === 'chiikawa').every((i) => i.name.startsWith('먼작귀 햄스터'))`)), JSON.stringify(chii));
+  // 캐릭터 옷은 칸마다 맨 뒤에 연달아 (일반 옷 → 캐릭터 옷), 먼작귀 햄스터가 맨 마지막
+  const tailOk = ["dress", "top", "bottom", "shoes", "hat"].every((t) => {
+    const f = counts[t].map((c) => c.char), first = f.indexOf(true);
+    return first > 0 && f.slice(0, first).every((x) => !x) && f.slice(first).every(Boolean) && counts[t].at(-1).label.startsWith("먼작귀 햄스터");
+  });
+  check("캐릭터 옷은 칸마다 맨 뒤에 연달아, 먼작귀 햄스터가 맨 마지막", tailOk, ["dress", "top", "bottom", "shoes", "hat"].map((t) => counts[t].map((c) => (c.char ? "★" : "·")).join("")).join(" "));
+  // 옷 위에 들어가는 먼작귀 햄스터 그림은 다른 캐릭터(마이멜로디)의 80% 크기
+  const chiiSize = await evaluate(`(() => { const sc = (id) => { const d = document.createElement('div'); d.innerHTML = Doll.figure({ dress: id }); return +d.querySelector('g.char-motif').getAttribute('transform').match(/scale\\(([\\d.]+)\\)/)[1]; };
+    return { melody: sc('d-melody'), chiikawa: sc('d-chiikawa') }; })()`);
+  check("먼작귀 햄스터 그림 크기: 다른 캐릭터의 80%", Math.abs(chiiSize.chiikawa / chiiSize.melody - 0.8) < 0.01, JSON.stringify(chiiSize));
   check("없앤 옷: 무지개 원피스·꽃무늬 민소매 티·남색 반바지·반짝 불빛 운동화·연두 벙거지 모자", await evaluate(`['d-rainbow', 't-tank', 'b-navy', 's-light', 'h-bucket'].every((id) => !ITEMS.some((i) => i.id === id))`));
   await click(`.tab[data-tab="dress"]`, 300);
 

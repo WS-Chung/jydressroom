@@ -3,7 +3,7 @@
 
   SHOP  : 딸기(돈) 규칙
   CATS  : 옷장·가게 칸 (원피스, 윗옷, 바지·치마, 신발, 모자)
-  ITEMS : 가게에서 파는 옷. 한 줄에 하나
+  ITEMS : 가게에서 파는 옷. 한 줄에 하나. 칸마다 15개, 캐릭터 옷(char)은 그 칸의 맨 뒤에 연달아 두어요 (새 캐릭터는 맨 아래)
     id      : 바꾸지 마세요 (기록에 남는 이름표)
     cat     : dress 원피스 · top 윗옷 · bottom 바지·치마 · shoes 신발 · hat 모자
     name    : 아이가 읽는 이름
@@ -56,13 +56,13 @@ window.ITEMS = [
   { id: "d-berry", cat: "dress", name: "딸기 원피스", tone: "빨강", shape: "aline", sleeve: "puff", collar: "round", color: "#fff4f4", pattern: "berries", color2: "#e53935" },
   { id: "d-denim", cat: "dress", name: "청 멜빵 원피스", tone: "파랑", shape: "pinafore", color: "#5b8fd6", pattern: "denim", pc: "#ffffff", motif: "heart" },
   { id: "d-star", cat: "dress", name: "별빛 긴 드레스", tone: "남색", shape: "long", sleeve: "short", color: "#3f51b5", pattern: "stars", pc: "#ffe082" },
-  { id: "d-chiikawa", cat: "dress", name: "먼작귀 햄스터 원피스", tone: "하양", shape: "aline", sleeve: "puff", collar: "round", color: "#ffffff", motif: "chiikawa", char: "chiikawa", belt: true, color2: "#f9c6d8" },
   { id: "d-orange", cat: "dress", name: "주황 리본 원피스", tone: "주황", shape: "aline", sleeve: "puff", color: "#ffb74d", color2: "#ffffff", belt: true },
   { id: "d-long", cat: "dress", name: "분홍 꽃 긴 원피스", tone: "분홍", shape: "long", sleeve: "puff", collar: "frill", color: "#f48fb1", pattern: "flowers", pc: "#ffffff" },
   { id: "d-melody", cat: "dress", name: "마이멜로디 원피스", tone: "분홍", shape: "aline", sleeve: "puff", collar: "round", color: "#ffc4dd", motif: "melody", char: "melody", belt: true, color2: "#ffffff" },
   { id: "d-kuromi", cat: "dress", name: "쿠로미 원피스", tone: "검정", shape: "aline", sleeve: "short", collar: "frill", color: "#3a3347", color2: "#f7a1c4", motif: "kuromi", char: "kuromi" },
   { id: "d-hachu", cat: "dress", name: "하츄핑 공주 드레스", tone: "분홍", shape: "princess", sleeve: "puff", color: "#ff9ccc", pattern: "hearts", pc: "#ffffff", color2: "#ff5fa8", motif: "hachu", char: "hachu" },
   { id: "d-hachu2", cat: "dress", name: "하츄핑 튜튜 원피스", tone: "분홍", shape: "tutu", sleeve: "puff", color: "#ffb3d9", color2: "#ff5fa8", motif: "hachu", char: "hachu" },
+  { id: "d-chiikawa", cat: "dress", name: "먼작귀 햄스터 원피스", tone: "하양", shape: "aline", sleeve: "puff", collar: "round", color: "#ffffff", motif: "chiikawa", char: "chiikawa", belt: true, color2: "#f9c6d8" },
 
   // ── 윗옷 ──
   { id: "t-stripe", cat: "top", name: "분홍 줄무늬 티셔츠", tone: "분홍", shape: "tee", color: "#f8a5c2", pattern: "stripes", pc: "#ffffff" },
@@ -72,7 +72,6 @@ window.ITEMS = [
   { id: "t-cardigan", cat: "top", name: "보라 가디건", tone: "보라", shape: "cardigan", color: "#b39ddb" },
   { id: "t-jacket", cat: "top", name: "청자켓", tone: "파랑", shape: "jacket", color: "#6f9fd8", pattern: "denim", pc: "#ffffff" },
   { id: "t-knit", cat: "top", name: "무지개 니트", tone: "무지개", shape: "knit", color: "#ffffff", pattern: "rainbow" },
-  { id: "t-chiikawa", cat: "top", name: "먼작귀 햄스터 티셔츠", tone: "하양", shape: "tee", color: "#ffffff", motif: "chiikawa", char: "chiikawa" },
   { id: "t-bear", cat: "top", name: "곰돌이 맨투맨", tone: "갈색", shape: "sweat", color: "#f1dcc0", motif: "bear" },
   { id: "t-shirt", cat: "top", name: "주황 체크 셔츠", tone: "주황", shape: "shirt", color: "#ffffff", pattern: "gingham", pc: "#fb8c00" },
   { id: "t-padding", cat: "top", name: "분홍 패딩", tone: "분홍", shape: "padding", color: "#f48fb1", pattern: "quilt", pc: "#d76a93" },
@@ -80,6 +79,7 @@ window.ITEMS = [
   { id: "t-melody2", cat: "top", name: "마이멜로디 가디건", tone: "분홍", shape: "cardigan", color: "#ffbcd8", motif: "melody", char: "melody" },
   { id: "t-kuromi", cat: "top", name: "쿠로미 후드티", tone: "검정", shape: "hoodie", color: "#3a3347", color2: "#f7a1c4", motif: "kuromi", char: "kuromi" },
   { id: "t-hachu", cat: "top", name: "하츄핑 티셔츠", tone: "분홍", shape: "tee", color: "#ffe3f0", motif: "hachu", char: "hachu" },
+  { id: "t-chiikawa", cat: "top", name: "먼작귀 햄스터 티셔츠", tone: "하양", shape: "tee", color: "#ffffff", motif: "chiikawa", char: "chiikawa" },
 
   // ── 바지·치마 ──
   { id: "b-pleats", cat: "bottom", name: "분홍 주름치마", tone: "분홍", shape: "pleats", color: "#f8a5c2" },
@@ -90,16 +90,15 @@ window.ITEMS = [
   { id: "b-long", cat: "bottom", name: "꽃무늬 긴 치마", tone: "노랑", shape: "longskirt", color: "#fff0d6", pattern: "flowers", pc: "#ff8a65" },
   { id: "b-green", cat: "bottom", name: "초록 바지", tone: "초록", shape: "pants", color: "#81c784" },
   { id: "b-dots", cat: "bottom", name: "보라 땡땡이 치마", tone: "보라", shape: "skirt", color: "#b39ddb", pattern: "dots", pc: "#ffffff" },
-  { id: "b-chiikawa", cat: "bottom", name: "먼작귀 햄스터 치마", tone: "하양", shape: "skirt", color: "#ffffff", motif: "chiikawa", char: "chiikawa" },
   { id: "b-berry", cat: "bottom", name: "딸기 치마", tone: "빨강", shape: "skirt", color: "#ffffff", pattern: "berries" },
   { id: "b-rainbow", cat: "bottom", name: "무지개 치마", tone: "무지개", shape: "pleats", color: "#ffffff", pattern: "rainbow" },
   { id: "b-jogger", cat: "bottom", name: "분홍 운동복 바지", tone: "분홍", shape: "jogger", color: "#f48fb1" },
   { id: "b-melody", cat: "bottom", name: "마이멜로디 치마", tone: "분홍", shape: "skirt", color: "#ffc4dd", motif: "melody", char: "melody" },
   { id: "b-kuromi", cat: "bottom", name: "쿠로미 바지", tone: "검정", shape: "pants", color: "#3a3347", motif: "kuromi", char: "kuromi" },
   { id: "b-hachu", cat: "bottom", name: "하츄핑 튜튜 치마", tone: "분홍", shape: "tutu", color: "#ff9ccc", motif: "hachu", char: "hachu" },
+  { id: "b-chiikawa", cat: "bottom", name: "먼작귀 햄스터 치마", tone: "하양", shape: "skirt", color: "#ffffff", motif: "chiikawa", char: "chiikawa" },
 
   // ── 신발 ──
-  { id: "s-chiikawa", cat: "shoes", name: "먼작귀 햄스터 운동화", tone: "하양", shape: "sneaker", color: "#ffffff", motif: "chiikawa", char: "chiikawa" },
   { id: "s-red", cat: "shoes", name: "빨간 구두", tone: "빨강", shape: "maryjane", color: "#e53935" },
   { id: "s-black", cat: "shoes", name: "까만 구두", tone: "검정", shape: "maryjane", color: "#3a3347" },
   { id: "s-rain", cat: "shoes", name: "노란 장화", tone: "노랑", shape: "rainboots", color: "#fdd835" },
@@ -114,6 +113,7 @@ window.ITEMS = [
   { id: "s-melody", cat: "shoes", name: "마이멜로디 운동화", tone: "분홍", shape: "sneaker", color: "#ffc4dd", motif: "melody", char: "melody" },
   { id: "s-kuromi", cat: "shoes", name: "쿠로미 구두", tone: "검정", shape: "maryjane", color: "#3a3347", motif: "kuromi", char: "kuromi" },
   { id: "s-hachu", cat: "shoes", name: "하츄핑 구두", tone: "분홍", shape: "glass", color: "#ff9ccc", motif: "hachu", char: "hachu" },
+  { id: "s-chiikawa", cat: "shoes", name: "먼작귀 햄스터 운동화", tone: "하양", shape: "sneaker", color: "#ffffff", motif: "chiikawa", char: "chiikawa" },
 
   // ── 모자 ──
   { id: "h-straw", cat: "hat", name: "밀짚모자", tone: "노랑", shape: "straw", color: "#f3d38b", color2: "#ff8fab" },
@@ -126,12 +126,12 @@ window.ITEMS = [
   { id: "h-beret", cat: "hat", name: "빨간 베레모", tone: "빨강", shape: "beret", color: "#ef5350" },
   { id: "h-cat", cat: "hat", name: "고양이 머리띠", tone: "검정", shape: "cat", color: "#3a3347", color2: "#ffc1dc" },
   { id: "h-berry", cat: "hat", name: "딸기 모자", tone: "빨강", shape: "berrycap", color: "#ef5350" },
-  { id: "h-chiikawa", cat: "hat", name: "먼작귀 햄스터 머리띠", tone: "하양", shape: "charband", color: "#ffffff", color2: "#f4a6c3", motif: "chiikawa", char: "chiikawa" },
   { id: "h-stars", cat: "hat", name: "별 머리핀", tone: "노랑", shape: "starpins", color: "#ffd54f" },
   // 캐릭터 머리띠: 색 머리띠(color, 테두리 color2) 위에 캐릭터 그림(motif)을 얹어요
   { id: "h-melody", cat: "hat", name: "마이멜로디 머리띠", tone: "분홍", shape: "charband", color: "#f7a1c4", motif: "melody", char: "melody" },
   { id: "h-kuromi", cat: "hat", name: "쿠로미 머리띠", tone: "검정", shape: "charband", color: "#3a3347", color2: "#f7a1c4", motif: "kuromi", char: "kuromi" },
   { id: "h-hachu", cat: "hat", name: "하츄핑 머리띠", tone: "분홍", shape: "charband", color: "#ff8cc6", motif: "hachu", char: "hachu" },
+  { id: "h-chiikawa", cat: "hat", name: "먼작귀 햄스터 머리띠", tone: "하양", shape: "charband", color: "#ffffff", color2: "#f4a6c3", motif: "chiikawa", char: "chiikawa" },
 ];
 
 window.BASE = [

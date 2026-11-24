@@ -15,7 +15,7 @@
 - 파일 이름이나 위치를 바꾸려면 `js/data/items.js`의 `CHARACTER_IMAGES`를 고쳐요
 - 이 폴더의 그림 파일은 GitHub에 함께 올라가고 Vercel 사이트에서도 보여요
 - 마이멜로디·쿠로미·하츄핑·먼작귀 햄스터 머리띠도 머리띠 위에 이 그림을 얹어요
-- 새 캐릭터를 더하려면 그림 파일을 넣고, `js/data/items.js`의 `CHARACTERS`·`CHARACTER_IMAGES`·옷 목록과 `js/doll.js`의 흉내 그림(`MOTIFS`)·머리띠 높이(`CHARBAND_Y`)에 이름을 하나씩 더해요
+- 새 캐릭터를 더하려면 그림 파일을 넣고, `js/data/items.js`의 `CHARACTERS`·`CHARACTER_IMAGES`·옷 목록과 `js/doll.js`의 흉내 그림(`MOTIFS`)·머리띠 높이(`CHARBAND_Y`)에 이름을 하나씩 더해요. 옷 위에서 그림이 너무 크면 `CHAR_SCALE`로 그 캐릭터만 줄일 수 있어요 (먼작귀 햄스터는 0.8배)
 
 ## 지금 들어 있는 그림
 
