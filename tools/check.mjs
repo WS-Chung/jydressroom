@@ -102,16 +102,21 @@ try {
   check("백화점: 칸마다 옷 15개, 선물 3개", clothesOk && counts.gift.length === 3, Object.entries(counts).map(([k, v]) => `${k} ${v.length}`).join(", "));
   const allCards = Object.values(counts).flat();
   check("백화점: 캐릭터 옷은 🍓20, 보통 옷·선물은 🍓10", allCards.every((c) => c.price === (c.char ? "🍓20" : "🍓10")));
+  // 먼작귀 햄스터: 원피스·윗옷·바지·치마·신발·모자 칸에 하나씩, 흰색 톤, 다른 캐릭터 옷과 같은 값(🍓20)
+  const chii = await evaluate(`ITEMS.filter((i) => i.char === 'chiikawa').map((i) => ({ cat: i.cat, tone: i.tone, white: /^#f[0-9a-f]f[0-9a-f]f[0-9a-f]$/i.test(i.color), shape: i.shape }))`);
+  check("먼작귀 햄스터 옷: 칸마다 1개씩 5벌, 흰색 톤, 이름 '먼작귀 햄스터'", chii.map((c) => c.cat).sort().join() === "bottom,dress,hat,shoes,top" && chii.every((c) => c.tone === "하양" && c.white)
+    && (await evaluate(`CHARACTERS.chiikawa`)) === "먼작귀 햄스터" && (await evaluate(`ITEMS.filter((i) => i.char === 'chiikawa').every((i) => i.name.startsWith('먼작귀 햄스터'))`)), JSON.stringify(chii));
+  check("없앤 옷: 무지개 원피스·꽃무늬 민소매 티·남색 반바지·반짝 불빛 운동화·연두 벙거지 모자", await evaluate(`['d-rainbow', 't-tank', 'b-navy', 's-light', 'h-bucket'].every((id) => !ITEMS.some((i) => i.id === id))`));
   await click(`.tab[data-tab="dress"]`, 300);
 
   // 진짜 캐릭터 그림(PNG)을 넣었을 때: 그려 둔 칸·거울의 캐릭터 무늬 자리가 그 그림으로 바뀌는지 (시험용 그림으로 흉내)
   const fake = (c, t) => "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="${c}"/><text x="50" y="60" font-size="30" text-anchor="middle" fill="#fff">${t}</text></svg>`);
   const drawnBefore = await evaluate(`document.querySelectorAll('#grid g.char-motif').length`);
-  await evaluate(`Doll.setCharacterImage('melody', ${JSON.stringify(fake("#f48fb1", "MM"))}); Doll.setCharacterImage('kuromi', ${JSON.stringify(fake("#3a3347", "KU"))}); Doll.setCharacterImage('hachu', ${JSON.stringify(fake("#ff5fa8", "HA"))}); true`);
+  await evaluate(`Doll.setCharacterImage('melody', ${JSON.stringify(fake("#f48fb1", "MM"))}); Doll.setCharacterImage('kuromi', ${JSON.stringify(fake("#3a3347", "KU"))}); Doll.setCharacterImage('hachu', ${JSON.stringify(fake("#ff5fa8", "HA"))}); Doll.setCharacterImage('chiikawa', ${JSON.stringify(fake("#9e9e9e", "CH"))}); true`);
   await sleep(300);
   await click(`#grid .item-card.char`, 400);
   const png = await evaluate(`({ grid: document.querySelectorAll('#grid image.char-img').length, mirror: document.querySelectorAll('#mirror image.char-img').length, left: document.querySelectorAll('#grid g.char-motif:not(:has(image))').length })`);
-  check("캐릭터 그림 파일을 넣으면: 옷 칸과 거울의 캐릭터 무늬가 그 그림으로", drawnBefore === 4 && png.grid === 4 && png.mirror === 1 && png.left === 0, JSON.stringify({ drawnBefore, ...png }));
+  check("캐릭터 그림 파일을 넣으면: 옷 칸과 거울의 캐릭터 무늬가 그 그림으로", drawnBefore === 5 && png.grid === 5 && png.mirror === 1 && png.left === 0, JSON.stringify({ drawnBefore, ...png }));
   await shot("flow_char_png");
 
   // 입어 보기 → 바구니에 담기 → 빼기 → 다시 담기
@@ -240,9 +245,9 @@ try {
   check("내 방에 가요 → 내 방", (await hash()) === "#/room");
 
   // 3) 캐릭터 머리띠: 머리띠 + 캐릭터 그림 (덮는 모자가 아니라서 똥머리·리본이 그대로 보여요)
-  const headbands = await evaluate(`["h-melody", "h-kuromi", "h-hachu"].map((id) => { const d = document.createElement('div'); d.innerHTML = Doll.figure({ hat: id, hair: 'bun' });
+  const headbands = await evaluate(`["h-melody", "h-kuromi", "h-hachu", "h-chiikawa"].map((id) => { const d = document.createElement('div'); d.innerHTML = Doll.figure({ hat: id, hair: 'bun' });
     return { id, name: ITEM_NAME(id), band: d.querySelectorAll('path[d^="M 56 68 Q 58 30"]').length === 2, char: !!d.querySelector('g.char-motif'), bun: !!d.querySelector('circle[cx="100"][cy="20"]') }; })`.replace("ITEM_NAME(id)", "ITEMS.find((i) => i.id === id).name"));
-  check("마이멜로디·쿠로미·하츄핑 머리띠: 머리띠 위에 캐릭터 그림, 머리 모양은 그대로", headbands.every((b) => b.band && b.char && b.bun && b.name.endsWith("머리띠")), JSON.stringify(headbands));
+  check("마이멜로디·쿠로미·하츄핑·먼작귀 햄스터 머리띠: 머리띠 위에 캐릭터 그림, 머리 모양은 그대로", headbands.every((b) => b.band && b.char && b.bun && b.name.endsWith("머리띠")), JSON.stringify(headbands));
 
   // 내 방: 산 옷만 옷장에 · 입기 · 머리 바꾸기
   const roomDress = await evaluate(`document.querySelectorAll('#grid .item-card').length`);

@@ -3,7 +3,7 @@
   - 정연이 한 사람을 같은 자리(viewBox 0 -20 200 400)에 겹겹이 그려서, 옷을 고르면 그 위에 '입혀져요'
     겹 순서: 뒷머리 → 몸 → (속옷) → 신발 → 바지·치마 → 윗옷 → 원피스 → 손 → 얼굴 → 앞머리 → 모자
   - 옷 모양·색·무늬는 js/data/items.js의 값으로 정해요 (shape, color, pattern, motif …)
-  - 캐릭터 그림(마이멜로디·쿠로미·하츄핑)은 집에서 쓰려고 단순하게 흉내 낸 그림이에요
+  - 캐릭터 그림(마이멜로디·쿠로미·하츄핑·먼작귀 햄스터)은 집에서 쓰려고 단순하게 흉내 낸 그림이에요
 
   window.Doll
     .figure(outfit, opts)   정연이 (outfit: { dress, top, bottom, shoes, hat, hair, hairColor })
@@ -121,6 +121,11 @@
     hachu: () => {
       const P = "#ff8cc6", D = "#ff4f9e";
       return `<ellipse cx="-14" cy="0" rx="6.5" ry="4.5" transform="rotate(-25 -14 0)" fill="#fff" stroke="#ffb3d6" stroke-width="1.2"/><ellipse cx="14" cy="0" rx="6.5" ry="4.5" transform="rotate(25 14 0)" fill="#fff" stroke="#ffb3d6" stroke-width="1.2"/>${heart(0, -14, 5.5, D, "#d93a85")}<circle r="12" fill="${P}" stroke="#e46aa8" stroke-width="1.2"/><ellipse cx="-4.3" cy="0" rx="2.2" ry="2.9" fill="#3a2433"/><ellipse cx="4.3" cy="0" rx="2.2" ry="2.9" fill="#3a2433"/><circle cx="-3.6" cy="-1" r=".8" fill="#fff"/><circle cx="5" cy="-1" r=".8" fill="#fff"/><ellipse cx="-7.5" cy="4" rx="2" ry="1.2" fill="${D}" opacity=".6"/><ellipse cx="7.5" cy="4" rx="2" ry="1.2" fill="${D}" opacity=".6"/><path d="M -2 4.5 Q 0 6.5 2 4.5" stroke="#3a2433" stroke-width=".9" fill="none"/>${heart(0, -7, 1.8, "#fff")}`;
+    },
+    // 먼작귀 햄스터: 하얀 몸이라 흰 옷에서도 보이게 굵은 테두리
+    chiikawa: () => {
+      const O = "#4a4a4a";
+      return `<circle cx="-9" cy="-9" r="5" fill="#fff" stroke="${O}" stroke-width="1.4"/><circle cx="9" cy="-9" r="5" fill="#fff" stroke="${O}" stroke-width="1.4"/><ellipse cy="1" rx="14" ry="12.5" fill="#fff" stroke="${O}" stroke-width="1.6"/><ellipse cx="-8" cy="4" rx="3.6" ry="2.4" fill="#f9b8cd"/><ellipse cx="8" cy="4" rx="3.6" ry="2.4" fill="#f9b8cd"/><ellipse cx="-5" cy="0" rx="1.5" ry="2" fill="#2b2b2b"/><ellipse cx="5" cy="0" rx="1.5" ry="2" fill="#2b2b2b"/><path d="M -1.6 4.5 Q 0 6 1.6 4.5" stroke="${O}" stroke-width="1" fill="none" stroke-linecap="round"/>`;
     },
   };
   // ───────── 진짜 캐릭터 그림 (넣었을 때만) ─────────
@@ -253,7 +258,6 @@
 
   // ───────── 윗옷 ─────────
   const TOP = "M 74 141 L 90 136 Q 100 146 110 136 L 126 141 L 130 153 L 128 226 Q 100 232 72 226 L 70 153 Z";
-  const TOP_NS = "M 81 141 L 88 139 Q 100 151 112 139 L 119 141 L 126 156 L 128 226 Q 100 232 72 226 L 74 156 Z";
   const PAD = "M 70 140 L 90 134 Q 100 143 110 134 L 130 140 L 136 154 L 134 232 Q 100 240 66 232 L 64 154 Z";
   const PANEL_L = "M 74 141 L 90 136 L 97 160 L 97 229 Q 84 230 72 226 L 70 153 Z";
   function drawTop(it, p) {
@@ -263,7 +267,6 @@
     const inner = sh(TOP, "#ffffff", "#cfc7cc");
     let o = "";
     switch (it.shape) {
-      case "tank": o += sh(TOP_NS, f, L); break;
       case "tee": o += sleeves("short", f, L) + sh(TOP, f, L) + `<path d="M 91.5 139 Q 100 148.5 108.5 139" stroke="${L}" stroke-width="1.2" fill="none"/>`; break;
       case "longtee": o += sleeves("long", f, L) + sh(TOP, f, L); break;
       case "blouse": o += sh(TOP, f, L) + sleeves("puff", f, L) + collar("frill", "#ffffff", L) + [166, 184, 202].map((y) => `<circle cx="100" cy="${y}" r="2.2" fill="#fff" stroke="${L}" stroke-width="1"/>`).join(""); break;
@@ -358,12 +361,11 @@
       let o = "";
       const shaft = (top) => sh(`M ${f1(cx - 10)} ${top} L ${f1(cx + 10)} ${top} L ${f1(cx + 11)} 350 L ${f1(cx - 11)} 350 Z`, f, L);
       switch (it.shape) {
-        case "sneaker": case "lightup": {
+        case "sneaker": {
           const lace = c === "#ffffff" ? "#9ec9f0" : "#ffffff";
           o += sh(shoe(cx, 336), f, L)
             + `<path d="M ${f1(cx - 12.6)} 354 L ${f1(cx + 12.6)} 354 L ${f1(cx + 12.3)} 357 Q ${f1(cx + 12)} 362 ${f1(cx + 5)} 362 L ${f1(cx - 5)} 362 Q ${f1(cx - 12)} 362 ${f1(cx - 12.3)} 357 Z" fill="#fff" stroke="${L}" stroke-width="1.6"/>`
             + `<path d="M ${f1(cx - 5)} 341 L ${f1(cx + 5)} 343 M ${f1(cx - 5)} 345.5 L ${f1(cx + 5)} 347.5" stroke="${lace}" stroke-width="1.8" stroke-linecap="round"/>`;
-          if (it.shape === "lightup") o += RAINBOW.map((rc, k) => `<circle cx="${f1(cx - 9 + k * 3.6)}" cy="358" r="1.6" fill="${rc}"/>`).join("") + star(cx + 12, 340, 3, "#fff59d");
           break;
         }
         case "maryjane": case "glass":
@@ -397,9 +399,9 @@
   }
 
   // ───────── 모자 ─────────
-  const COVER = new Set(["straw", "cap", "beanie", "beret", "berrycap", "bucket"]);
+  const COVER = new Set(["straw", "cap", "beanie", "beret", "berrycap"]);
   // 캐릭터 머리띠 위 그림의 높이 (세로로 긴 그림은 조금 위로 올려서 앞머리를 덜 가리게)
-  const CHARBAND_Y = { melody: 16, kuromi: 18, hachu: 24 };
+  const CHARBAND_Y = { melody: 16, kuromi: 18, hachu: 24, chiikawa: 20 };
   function drawHat(it, p) {
     const c = it.color, L = dark(c), c2 = it.color2 || light(c, 0.55), f = p.fill(it);
     // 머리띠 (line: 테두리 색. 까만 머리띠는 분홍 테두리라야 까만 머리 위에서 보여요)
@@ -416,9 +418,6 @@
         return `<circle cx="100" cy="16" r="13" fill="${c2}" stroke="${dark(c2, 0.25)}" stroke-width="2"/>` + sh("M 52 76 Q 50 20 100 18 Q 150 20 148 76 Z", f, L)
           + `<path d="M 76 26 Q 72 44 72 62 M 100 20 L 100 58 M 124 26 Q 128 44 128 62" stroke="${L}" stroke-width="1.2" fill="none" opacity=".6"/>`
           + sh("M 49 62 Q 100 52 151 62 L 151 80 Q 100 70 49 80 Z", dark(c, 0.1), L);
-      case "bucket":
-        return sh("M 62 58 Q 62 22 100 22 Q 138 22 138 58 Z", c, L) + sh("M 61 54 Q 100 48 139 54 L 158 80 Q 100 68 42 80 Z", c, L)
-          + `<path d="M 54 70 Q 100 62 146 70" stroke="${L}" stroke-width="1" stroke-dasharray="3 2" fill="none"/>`;
       case "crown":
         return sh("M 70 48 L 68 22 L 82 34 L 92 12 L 100 30 L 108 12 L 118 34 L 132 22 L 130 48 Q 100 42 70 48 Z", c, L)
           + [[68, 22], [92, 12], [108, 12], [132, 22]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3" fill="${c}" stroke="${L}" stroke-width="1.4"/>`).join("")
